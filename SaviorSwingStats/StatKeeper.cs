@@ -11,15 +11,19 @@ namespace SaviorSwingStats
     public class StatKeeper
     {
         public string songName, songDifficulty;
+        public int songNoteCount;
         private List<string> statsheet = new List<string>();
+        //private readonly List<Statline> statlines = new List<Statline>();
+
         private Statline statline = new Statline();
 
         private readonly ScoreController _scoreController;
         public ScoreController GetScoreController() => _scoreController;
 
-        private readonly GameplayCoreSceneSetupData _sceneData; public GameplayCoreSceneSetupData GetSceneData() => _sceneData;
+        private readonly GameplayCoreSceneSetupData _sceneData;
+        public GameplayCoreSceneSetupData GetSceneData() => _sceneData;
 
-        //private BeatmapObjectSpawnController _spawnController;
+        //private readonly BeatmapObjectSpawnController _spawnController;
         //public BeatmapObjectSpawnController GetSpawnController() => _spawnController;
         //private readonly NoteController _noteController;
         //public NoteController GetNoteController() => _noteController;
@@ -30,11 +34,14 @@ namespace SaviorSwingStats
             //statsheet.Clear();
             _scoreController = Resources.FindObjectsOfTypeAll<ScoreController>().First();
             _sceneData = BS_Utils.Plugin.LevelData.GameplayCoreSceneSetupData;
+            //_spawnController = Resources.FindObjectsOfTypeAll<BeatmapObjectSpawnController>().First();
             songDifficulty = _sceneData.difficultyBeatmap.difficulty.ToString().ToLower();
             songName = _sceneData.difficultyBeatmap.level.songName;
+            songNoteCount = _sceneData.difficultyBeatmap.beatmapData.notesCount;
             //_noteController = Resources.FindObjectsOfTypeAll<NoteController>().First();
             GetScoreController().noteWasCutEvent += OnNoteCut;
             GetScoreController().noteWasMissedEvent += OnNoteMissed;
+ 
         }
 
         public void OnNoteCut(NoteData note, NoteCutInfo cutInfo, int multiplier)
@@ -44,9 +51,11 @@ namespace SaviorSwingStats
 
             else
             {
-                statline = new Statline(statsheet.Count+1, cutInfo.allIsOK, note.time, (int)note.noteType, note.cutDirection.ToString(), note.lineIndex, (int)note.noteLineLayer, cutInfo.cutDistanceToCenter, cutInfo.timeDeviation, multiplier, cutInfo.swingRatingCounter.beforeCutRating, cutInfo.swingRatingCounter.afterCutRating);
+                statline = new Statline(note.id+1, cutInfo.allIsOK, note.time, (int)note.noteType, note.cutDirection.ToString(), note.lineIndex, (int)note.noteLineLayer, cutInfo.cutDistanceToCenter, cutInfo.timeDeviation, multiplier, cutInfo.swingRatingCounter.beforeCutRating, cutInfo.swingRatingCounter.afterCutRating);
 
-                statsheet.Add(statline.GetStatline());
+                statsheet.Insert(note.id, statline.GetStatline());
+
+                //statsheet.Add(statline.GetStatline());
             }
         }
 
@@ -56,9 +65,10 @@ namespace SaviorSwingStats
                 return;
             else
             {
-                statline = new Statline(statsheet.Count + 1, false, note.time, (int)note.noteType, note.cutDirection.ToString(), note.lineIndex, (int)note.noteLineLayer, 10f, 10f, multiplier, 0f,0f);
+                statline = new Statline(note.id+1, false, note.time, (int)note.noteType, note.cutDirection.ToString(), note.lineIndex, (int)note.noteLineLayer, 10f, 10f, multiplier, 0f,0f);
 
-                statsheet.Add(statline.GetStatline());
+                statsheet.Insert(note.id, statline.GetStatline());
+                //statsheet.Add(statline.GetStatline());
             }
         }
 
