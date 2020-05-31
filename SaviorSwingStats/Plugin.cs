@@ -58,7 +58,7 @@ namespace SaviorSwingStats
             {
                 List<string> songStatList = statKeeper.GetSongStatsheet();
                 //string songStats = statKeeper.GetSongStats();
-                string path = directory + "" + statKeeper.songName + "_" + statKeeper.songDifficulty;
+                string path = directory + "" + statKeeper.songName + "_" + statKeeper.songDifficulty + ".csv";
                 SaveSongStats(path, songStatList);
                 statKeeper.ClearStats();
                 statKeeper = null;
