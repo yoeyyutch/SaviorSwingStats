@@ -53,9 +53,7 @@ namespace SaviorSwingStats
             {
                 statline = new Statline(note.id+1, cutInfo.allIsOK, note.time, (int)note.noteType, note.cutDirection.ToString(), note.lineIndex, (int)note.noteLineLayer, cutInfo.cutDistanceToCenter, cutInfo.timeDeviation, multiplier, cutInfo.swingRatingCounter.beforeCutRating, cutInfo.swingRatingCounter.afterCutRating);
 
-                statsheet.Insert(note.id, statline.GetStatline());
-
-                //statsheet.Add(statline.GetStatline());
+                statsheet.Add(statline.GetStatline());
             }
         }
 
@@ -67,8 +65,8 @@ namespace SaviorSwingStats
             {
                 statline = new Statline(note.id+1, false, note.time, (int)note.noteType, note.cutDirection.ToString(), note.lineIndex, (int)note.noteLineLayer, 10f, 10f, multiplier, 0f,0f);
 
-                statsheet.Insert(note.id, statline.GetStatline());
-                //statsheet.Add(statline.GetStatline());
+                statsheet.Add(statline.GetStatline());
+
             }
         }
 

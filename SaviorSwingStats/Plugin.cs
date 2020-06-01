@@ -16,8 +16,6 @@ namespace SaviorSwingStats
 
         readonly string directory = @"C:\Program Files\Oculus\Software\Software\hyperbolic-magnetism-beat-saber\UserData\SaviorSwingStats";
 
-
-
         // private LevelData levelData;
         private StatKeeper statKeeper;
         //BeatmapObjectSpawnController _spawnController;
@@ -66,7 +64,6 @@ namespace SaviorSwingStats
                 statKeeper.ClearStats();
                 statKeeper = null;
 
-                //SaveSongStats(path, songStats);
             }
 
             if (statKeeper == null)
@@ -83,26 +80,22 @@ namespace SaviorSwingStats
         //}
         private void SaveSongStats(string path, List<string> statlist)
         {
-
-            string timestamp = DateTime.Now.ToString();
-
-            // This text is added only once to the file.
+            // Column headers added only once to the file.
             if (!File.Exists(path))
             {
-                // Create a file to write to.
-                string createText = "Note ID,Note hit,Note Time, Direction, Lane, Level, Miss Distance, Time Deviation, Combo, Before Cut Rating, After CutRating" + Environment.NewLine;
-                File.WriteAllText(path, createText);
+                string header = "Note ID,Note hit,Note Time, Direction, Lane, Level, Miss Distance, Time Deviation, Combo, Before Cut Rating, After CutRating" + Environment.NewLine;
+                File.WriteAllText(path, header);
             }
 
-            //using (StreamWriter sw = File.AppendText(path))
-            //{
-            //    sw.WriteLine("****** Song completed at " + DateTime.Now);
-            //}
-
-            File.AppendAllText(path, timestamp);
+            File.AppendAllText(path, DateTime.Now.ToString() + Environment.NewLine);
             File.AppendAllLines(path, statlist);
             Logger.log.Info("5 Song stats saved to file.");
 
         }
     }
 }
+
+//using (StreamWriter sw = File.AppendText(path))
+//{
+//    sw.WriteLine("****** Song completed at " + DateTime.Now);
+//}
