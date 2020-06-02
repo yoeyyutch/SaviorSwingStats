@@ -51,4 +51,13 @@ namespace SaviorSwingStats
             return statline;
         }
     }
+
+    //public struct MissDirection
+    //{
+    //    public MissDirection()
+    //    {
+
+    //    }
+
+    //}
 }

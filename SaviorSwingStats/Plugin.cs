@@ -33,7 +33,6 @@ namespace SaviorSwingStats
             // Creates a new SwingData object to hold swing stats for the song being played
             BSEvents.gameSceneLoaded += GameSceneLoaded;
 
-
             // At the end of the level, the SwingsData stats are saved to a file
             BSEvents.levelCleared += SongEnded;
             BSEvents.levelFailed += SongEnded;
