@@ -80,13 +80,12 @@ namespace SaviorSwingStats
         private void SaveSongStats(string path, List<string> statlist)
         {
             // Column headers added only once to the file.
-            if (!File.Exists(path))
-            {
-                string header = "Note ID,Note hit,Note Time, Direction, Lane, Level, Miss Distance, Time Deviation, Combo, Before Cut Rating, After CutRating" + Environment.NewLine;
-                File.WriteAllText(path, header);
-            }
 
-            File.AppendAllText(path, DateTime.Now.ToString() + Environment.NewLine);
+                string header = "Note ID,Note hit,Note Time, Direction, Lane, Level, Miss Distance, Time Deviation, Combo, Before Cut Rating, After CutRating" + DateTime.Now.ToString() + Environment.NewLine;
+
+
+
+            File.AppendAllText(path, header);
             File.AppendAllLines(path, statlist);
             Logger.log.Info("5 Song stats saved to file.");
 

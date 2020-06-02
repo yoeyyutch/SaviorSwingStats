@@ -76,7 +76,7 @@ namespace SaviorSwingStats
                 Vector3 center = noteController.noteTransform.position;
                 Vector3 localCutPoint = cutInfo.cutPoint - center;
                 //NoteCutDirection directionType = data.cutDirection;
-                float cutMiss = IsCenterLeftOfCut(cutInfo.cutNormal, localCutPoint) ? -1f * cutInfo.cutDistanceToCenter : cutInfo.cutDistanceToCenter;
+                float cutMiss = IsCenterLeftOfCut(cutInfo.cutNormal, localCutPoint) ?  cutInfo.cutDistanceToCenter : -1f* cutInfo.cutDistanceToCenter;
 
                 statline = new Statline(note.id + 1, cutInfo.allIsOK, note.time, (int)note.noteType, note.cutDirection.ToString(), note.lineIndex, (int)note.noteLineLayer, cutMiss, cutInfo.timeDeviation, 0, cutInfo.swingRatingCounter.beforeCutRating, cutInfo.swingRatingCounter.afterCutRating);
 
