@@ -12,10 +12,11 @@ namespace SaviorSwingStats
     {
         public string songName, songDifficulty;
         public int songNoteCount;
-        private List<string> statsheet = new List<string>();
-        private readonly List<Statline> statlines = new List<Statline>();
+        private List<string> statsheet;
+        //private readonly List<Statline> statlines = new List<Statline>();
 
         private Statline statline = new Statline();
+       // private SongStats songStats = new SongStats();
 
         private readonly ScoreController _scoreController;
         public ScoreController GetScoreController() => _scoreController;
@@ -42,6 +43,7 @@ namespace SaviorSwingStats
             songDifficulty = _sceneData.difficultyBeatmap.difficulty.ToString().ToLower();
             songName = _sceneData.difficultyBeatmap.level.songName;
             songNoteCount = _sceneData.difficultyBeatmap.beatmapData.notesCount;
+            statsheet.Capacity = songNoteCount;
 
             //GetScoreController().noteWasCutEvent += OnNoteCut;
             GetScoreController().noteWasMissedEvent += OnNoteMissed;
@@ -78,7 +80,11 @@ namespace SaviorSwingStats
                 //NoteCutDirection directionType = data.cutDirection;
                 float cutMiss = IsCenterLeftOfCut(cutInfo.cutNormal, localCutPoint) ?  cutInfo.cutDistanceToCenter : -1f* cutInfo.cutDistanceToCenter;
 
-                statline = new Statline(note.id + 1, cutInfo.allIsOK, note.time, (int)note.noteType, note.cutDirection.ToString(), note.lineIndex, (int)note.noteLineLayer, cutMiss, cutInfo.timeDeviation, 0, cutInfo.swingRatingCounter.beforeCutRating, cutInfo.swingRatingCounter.afterCutRating);
+        
+ 
+
+
+                statline = new Statline(note.id + 1, cutInfo.allIsOK, note.time, (int)note.noteType, note.cutDirection.ToString(), note.lineIndex+1, (int)note.noteLineLayer+1, cutMiss, cutInfo.timeDeviation, 0, cutInfo.swingRatingCounter.beforeCutRating, cutInfo.swingRatingCounter.afterCutRating, center, cutInfo.cutPoint);
 
                 statsheet.Add(statline.GetStatline());
             }
@@ -92,7 +98,7 @@ namespace SaviorSwingStats
                 return;
             else
             {
-                statline = new Statline(note.id + 1, false, note.time, (int)note.noteType, note.cutDirection.ToString(), note.lineIndex, (int)note.noteLineLayer, 10f, 10f, multiplier, 0f, 0f);
+                statline = new Statline(note.id + 1, false, note.time, (int)note.noteType, note.cutDirection.ToString(), note.lineIndex+1, (int)note.noteLineLayer+1, 10f, 10f, multiplier, 0f, 0f, Vector3.zero, Vector3.zero);
 
                 statsheet.Add(statline.GetStatline());
             }
@@ -116,6 +122,8 @@ namespace SaviorSwingStats
 
             statsheet.Clear();
         }
+
+
 
         //public string GetSongStats()
         //{
