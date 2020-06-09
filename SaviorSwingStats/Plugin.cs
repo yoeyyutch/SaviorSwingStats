@@ -6,6 +6,7 @@ using BeatSaberMarkupLanguage;
 using System.Collections.Generic;
 using System.IO;
 using System;
+using IPA.Utilities;
 
 namespace SaviorSwingStats
 {
@@ -13,8 +14,12 @@ namespace SaviorSwingStats
     public class Plugin
     {
         internal static string Name => "SaviorSwingStats";
+        internal static string SaveFolder = Path.Combine(UnityGame.UserDataPath + Name);
 
         readonly string directory = @"C:\Program Files\Oculus\Software\Software\hyperbolic-magnetism-beat-saber\UserData\SaviorSwingStats";
+
+        readonly string myname = Path.Combine(Environment.CurrentDirectory, "UserData", Name, ".txt");
+
 
         // private LevelData levelData;
         private StatKeeper statKeeper;
@@ -23,13 +28,15 @@ namespace SaviorSwingStats
         [Init]
         public void Init(IPALogger logger)
         {
-            Directory.CreateDirectory(@"C:\Program Files\Oculus\Software\Software\hyperbolic-magnetism-beat-saber\UserData\SaviorSwingStats");
+
             Logger.log = logger;
         }
 
         [OnStart]
         public void OnApplicationStart()
         {
+            Directory.CreateDirectory(FileManager.StatsDirectory);
+
             // Creates a new SwingData object to hold swing stats for the song being played
             BSEvents.gameSceneLoaded += GameSceneLoaded;
 
@@ -37,6 +44,7 @@ namespace SaviorSwingStats
             BSEvents.levelCleared += SongEnded;
             BSEvents.levelFailed += SongEnded;
             BSEvents.levelQuit += SongEnded;
+            BSEvents.levelRestarted += SongEnded;
         }
 
         public void GameSceneLoaded()
@@ -48,7 +56,6 @@ namespace SaviorSwingStats
             else
                 Logger.log.Warn("E Statkeeper already exists.");
         }
-
 
 
         private void SongEnded(StandardLevelScenesTransitionSetupDataSO data, LevelCompletionResults resuts)
@@ -81,7 +88,7 @@ namespace SaviorSwingStats
         {
             // Column headers added only once to the file.
 
-                string header = "Note ID,Note hit,Note Time, Direction, Lane, Level, Miss Distance, Time Deviation, Combo, Before Cut Rating, After CutRating" + DateTime.Now.ToString() + Environment.NewLine;
+            string header = "Note ID,Note hit,Note Time, Direction, Lane, Level, Miss Distance, Time Deviation, Combo, Before Cut Rating, After CutRating, " + DateTime.Now.ToString() + Environment.NewLine;
 
 
 

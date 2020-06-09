@@ -10,13 +10,14 @@ namespace SaviorSwingStats
 {
     public class StatKeeper
     {
+
         public string songName, songDifficulty;
         public int songNoteCount;
-        private List<string> statsheet;
+        private List<string> statsheet = new List<string>();
         //private readonly List<Statline> statlines = new List<Statline>();
 
-        private Statline statline = new Statline();
-       // private SongStats songStats = new SongStats();
+        // private Statline statline = new Statline();
+        // private SongStats songStats = new SongStats();
 
         private readonly ScoreController _scoreController;
         public ScoreController GetScoreController() => _scoreController;
@@ -28,8 +29,8 @@ namespace SaviorSwingStats
         private readonly BeatmapObjectManager _BOM;
         public BeatmapObjectManager GetBOM() => _BOM;
 
-        private readonly NoteController _noteController;
-        public NoteController GetNoteController() => _noteController;
+        //private readonly NoteController _noteController;
+        //public NoteController GetNoteController() => _noteController;
 
         public StatKeeper()
         {
@@ -43,7 +44,7 @@ namespace SaviorSwingStats
             songDifficulty = _sceneData.difficultyBeatmap.difficulty.ToString().ToLower();
             songName = _sceneData.difficultyBeatmap.level.songName;
             songNoteCount = _sceneData.difficultyBeatmap.beatmapData.notesCount;
-            statsheet.Capacity = songNoteCount;
+            //statsheet.Capacity = songNoteCount;
 
             //GetScoreController().noteWasCutEvent += OnNoteCut;
             GetScoreController().noteWasMissedEvent += OnNoteMissed;
@@ -78,13 +79,22 @@ namespace SaviorSwingStats
                 Vector3 center = noteController.noteTransform.position;
                 Vector3 localCutPoint = cutInfo.cutPoint - center;
                 //NoteCutDirection directionType = data.cutDirection;
-                float cutMiss = IsCenterLeftOfCut(cutInfo.cutNormal, localCutPoint) ?  cutInfo.cutDistanceToCenter : -1f* cutInfo.cutDistanceToCenter;
-
-        
- 
+                float cutMiss = ProcessMissDistanceAndDirection(localCutPoint, note.cutDirection) ? cutInfo.cutDistanceToCenter : -1f * cutInfo.cutDistanceToCenter;
 
 
-                statline = new Statline(note.id + 1, cutInfo.allIsOK, note.time, (int)note.noteType, note.cutDirection.ToString(), note.lineIndex+1, (int)note.noteLineLayer+1, cutMiss, cutInfo.timeDeviation, 0, cutInfo.swingRatingCounter.beforeCutRating, cutInfo.swingRatingCounter.afterCutRating, center, cutInfo.cutPoint);
+
+                Statline statline = new Statline(
+                    number: note.id + 1,
+                    goodCut: cutInfo.allIsOK,
+                    time: note.time,
+                    type: (int)note.noteType,
+                    direction: note.cutDirection.ToString(),
+                    column: note.lineIndex + 1,
+                    row: (int)note.noteLineLayer + 1,
+                    cutDeviation: cutMiss,
+                    cutTimeOff: cutInfo.timeDeviation,
+                    noteCenter: center,
+                    cutCenter: cutInfo.cutPoint);
 
                 statsheet.Add(statline.GetStatline());
             }
@@ -98,16 +108,53 @@ namespace SaviorSwingStats
                 return;
             else
             {
-                statline = new Statline(note.id + 1, false, note.time, (int)note.noteType, note.cutDirection.ToString(), note.lineIndex+1, (int)note.noteLineLayer+1, 10f, 10f, multiplier, 0f, 0f, Vector3.zero, Vector3.zero);
+                Statline statline = new Statline(
+                    number: note.id + 1,
+                    goodCut: false,
+                    time: note.time,
+                    type: (int)note.noteType,
+                    direction: note.cutDirection.ToString(),
+                    column: note.lineIndex + 1,
+                    row: (int)note.noteLineLayer + 1,
+                    cutDeviation: 10f,
+                    cutTimeOff: 10f,
+                    noteCenter: Vector3.zero,
+                    cutCenter: Vector3.zero);
 
                 statsheet.Add(statline.GetStatline());
             }
         }
 
-        private bool IsCenterLeftOfCut(Vector3 cutPlaneNormal, Vector3 cutPoint)
+        //private bool IsCenterLeftOfCut(Vector3 cutPlaneNormal, Vector3 cutPoint)
+        //{
+        //    Vector3 lineNormal = new Vector3(cutPlaneNormal.x, cutPlaneNormal.y);
+        //    return Vector3.Dot(lineNormal, -cutPoint) > 0f;
+        //}
+
+        public bool ProcessMissDistanceAndDirection(Vector3 localCutPoint, NoteCutDirection direction)
         {
-            Vector3 lineNormal = new Vector3(cutPlaneNormal.x, cutPlaneNormal.y);
-            return Vector3.Dot(lineNormal, -cutPoint) > 0f;
+            int d = (int)direction;
+            bool misIsMoreRightThanAbove = Math.Abs(localCutPoint.x) > Math.Abs(localCutPoint.y);
+            bool isRight = localCutPoint.x > 0;
+            bool isAbove = localCutPoint.y > 0;
+            bool output;
+
+            if (d == 2 || d == 3)
+                output = isAbove ? true : false;
+
+            else if (d == 8)
+            {
+                if (misIsMoreRightThanAbove)
+                    output = isRight ? true : false;
+                else
+                    output = isAbove ? true : false;
+            }
+
+            else
+                output = isRight ? true : false;
+
+            return output;
+
         }
 
         public List<string> GetSongStatsheet()
