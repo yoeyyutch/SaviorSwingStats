@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BS_Utils.Utilities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,10 +16,10 @@ namespace SaviorSwingStats
 
         //private GameObject[] gridPlane;
 
-        void Start()
+        public Notegrid()
         {
             Logger.log.Info("Notegrid.start called.");
-            DrawCube();
+
 
            // materialCopy = FindObjectsOfType<Material>().FirstOrDefault();
             //Logger.log.Info(materialCopy.name);

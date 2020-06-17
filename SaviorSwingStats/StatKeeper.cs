@@ -10,10 +10,13 @@ namespace SaviorSwingStats
 {
     public class StatKeeper
     {
-        //GameObject gridobject = new GameObject();
+        private GameObject gridParent;
+        //private List<GameObject> gridPoints = new List<GameObject>();
+
         public bool _statkeeperActive;
         public string songName, songDifficulty;
         public int songNoteCount;
+       private List<Vector3> cuts = new List<Vector3>();
         private List<string> statsheet = new List<string>();
         //private readonly List<Statline> statlines = new List<Statline>();
 
@@ -35,14 +38,8 @@ namespace SaviorSwingStats
 
         public StatKeeper()
         {
+           
             
-            //gridobject.AddComponent<Notegrid>();
-            //if (notegrid == null)
-            //{
-            //    notegrid = new Notegrid();
-            //    Logger.log.Info("notegrid created inside statkeeper class");
-            //}
-
             Logger.log.Info("2 New statkeeper active.");
             //statsheet.Clear();
             _scoreController = Resources.FindObjectsOfTypeAll<ScoreController>().First();
@@ -57,25 +54,36 @@ namespace SaviorSwingStats
 
             //GetScoreController().noteWasCutEvent += OnNoteCut;
             GetScoreController().noteWasMissedEvent += OnNoteMissed;
-
             GetBOM().noteWasCutEvent += OnNoteCut;
             //GetBOM().noteWasMissedEvent += OnNoteMissed;
-
+            BSEvents.songPaused += OnPause;
+            BSEvents.songUnpaused += UnPause;
 
         }
 
-        //public void OnNoteCut(NoteData note, NoteCutInfo cutInfo, int multiplier)
-        //{
-        //    if (note.noteType == NoteType.Bomb)
-        //        return;
+        public void OnPause()
+        {
+            gridParent = new GameObject();
+            gridParent.transform.position = Vector3.zero;
+            Vector3 pointSize = Vector3.one * .01f;
+            Color pointColor = new Color(1f, 1f, 1f, 1f);
 
-        //    else
-        //    {
-        //        statline = new Statline(note.id+1, cutInfo.allIsOK, note.time, (int)note.noteType, note.cutDirection.ToString(), note.lineIndex, (int)note.noteLineLayer, CutAccuracy(cutInfo.cutDistanceToCenter), cutInfo.timeDeviation, multiplier, cutInfo.swingRatingCounter.beforeCutRating, cutInfo.swingRatingCounter.afterCutRating);
+            foreach (Vector3 cut in cuts)
+            {
+                GameObject cutPoint = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                cutPoint.transform.SetParent(gridParent.transform);
+                MeshRenderer renderer = cutPoint.GetComponent<MeshRenderer>();
+                renderer.material.SetColor("_Color", pointColor);
+                cutPoint.transform.position = cut;
+                cutPoint.transform.localScale = pointSize;
+            }
+        }
 
-        //        statlines.Add(statline);
-        //    }
-        //}
+        public void UnPause()
+        {
+            GameObject.Destroy(gridParent);
+        }
+
 
         public void OnNoteCut(INoteController noteController, NoteCutInfo cutInfo)
         {
@@ -85,8 +93,8 @@ namespace SaviorSwingStats
 
             else
             {
-                Vector3 center = noteController.noteTransform.position;
-                Vector3 localCutPoint = cutInfo.cutPoint - center;
+                Vector3 centerOfNote = noteController.noteTransform.position;
+                Vector3 centerOFCut = cutInfo.cutPoint - centerOfNote;
                 //NoteCutDirection directionType = data.cutDirection;
                 //float cutMiss = ProcessMissDistanceAndDirection(localCutPoint, note.cutDirection) ? cutInfo.cutDistanceToCenter : -cutInfo.cutDistanceToCenter;
                 float cutMiss = 0f;
@@ -101,14 +109,14 @@ namespace SaviorSwingStats
                     row: (int)note.noteLineLayer + 1,
                     cutDeviation: cutMiss,
                     cutTimeOff: cutInfo.timeDeviation,
-                    noteCenter: center,
+                    noteCenter: centerOfNote,
                     cutCenter: cutInfo.cutPoint);
 
                 statsheet.Add(statline.GetStatline());
+                cuts.Add(centerOFCut);
+
             }
-
         }
-
 
         public void OnNoteMissed(NoteData note, int multiplier)
         {
@@ -133,37 +141,7 @@ namespace SaviorSwingStats
             }
         }
 
-        //private bool IsCenterLeftOfCut(Vector3 cutPlaneNormal, Vector3 cutPoint)
-        //{
-        //    Vector3 lineNormal = new Vector3(cutPlaneNormal.x, cutPlaneNormal.y);
-        //    return Vector3.Dot(lineNormal, -cutPoint) > 0f;
-        //}
 
-        public bool ProcessMissDistanceAndDirection(Vector3 localCutPoint, NoteCutDirection direction)
-        {
-            int d = (int)direction;
-            bool misIsMoreRightThanAbove = Math.Abs(localCutPoint.x) > Math.Abs(localCutPoint.y);
-            bool isRight = localCutPoint.x > 0;
-            bool isAbove = localCutPoint.y > 0;
-            bool output;
-
-            if (d == 2 || d == 3)
-                output = isAbove ? true : false;
-
-            else if (d == 8)
-            {
-                if (misIsMoreRightThanAbove)
-                    output = isRight ? true : false;
-                else
-                    output = isAbove ? true : false;
-            }
-
-            else
-                output = isRight ? true : false;
-
-            return output;
-
-        }
 
         public List<string> GetSongStatsheet()
         {
@@ -174,72 +152,78 @@ namespace SaviorSwingStats
         public void ClearStats()
         {
             Logger.log.Info("6 Stats cleared");
-
             statsheet.Clear();
         }
-
-        //public void ClearGrid()
-        //{
-        //    if(notegrid != null)
-        //    {
-        //        notegrid = null;
-        //    }
-        //}
-
-
-
-        //public string GetSongStats()
-        //{
-        //    string songStats = string.Join("\n", statsheet);
-        //    Logger.log.Info("GetSongStats called.");
-
-        //    return songStats;
-        //}
-        //public void UpdateSlice(Vector3 cutPoint, Vector3 cutPlaneNormal, NoteCutDirection noteDirectionType)
-        //{
-        //    cutPoint = new Vector3(cutPoint.x, cutPoint.y);
-
-        //    Vector3 cutDirection = new Vector3(-cutPlaneNormal.y, cutPlaneNormal.x).normalized;
-        //    float cutRotation = Mathf.Atan2(cutDirection.y, cutDirection.x) * Mathf.Rad2Deg;
-
-
-        //    float noteRotation = RotationFromNoteCutDirection(noteDirectionType);
-        //    SetBackgroundRotation(noteRotation);
-
-
-        //    bool isCenterIsLeft = IsCenterLeftOfCut(cutPlaneNormal, cutPoint);
-        //    float missedAreaRotation = cutRotation - noteRotation + (isCenterIsLeft ? 180f : 0f);
-
-        //    float cutPointDistance = cutPoint.magnitude;
-
-
-
-        //}
-
-
-        //private float CutAccuracy(float cutPointDistance)
-        //{
-        //    return Mathf.Clamp01(cutPointDistance / 0.3f);
-        //}
-
-        //private float RotationFromNoteCutDirection(NoteCutDirection cutDirection)
-        //{
-
-        //    switch (cutDirection)
-        //    {
-        //        case NoteCutDirection.Down: return 0f;
-        //        case NoteCutDirection.DownRight: return 45f;
-        //        case NoteCutDirection.Right: return 90f;
-        //        case NoteCutDirection.UpRight: return 135f;
-        //        case NoteCutDirection.Up: return 180f;
-        //        case NoteCutDirection.UpLeft: return 225f;
-        //        case NoteCutDirection.Left: return 270f;
-        //        case NoteCutDirection.DownLeft: return 315f;
-        //        default: return 0f;
-        //    }
-        //}
     }
 }
+
+//public void ClearGrid()
+//{
+//    if(notegrid != null)
+//    {
+//        notegrid = null;
+//    }
+//}
+
+//private bool IsCenterLeftOfCut(Vector3 cutPlaneNormal, Vector3 cutPoint)
+//{
+//    Vector3 lineNormal = new Vector3(cutPlaneNormal.x, cutPlaneNormal.y);
+//    return Vector3.Dot(lineNormal, -cutPoint) > 0f;
+//}
+
+
+
+//public string GetSongStats()
+//{
+//    string songStats = string.Join("\n", statsheet);
+//    Logger.log.Info("GetSongStats called.");
+
+//    return songStats;
+//}
+//public void UpdateSlice(Vector3 cutPoint, Vector3 cutPlaneNormal, NoteCutDirection noteDirectionType)
+//{
+//    cutPoint = new Vector3(cutPoint.x, cutPoint.y);
+
+//    Vector3 cutDirection = new Vector3(-cutPlaneNormal.y, cutPlaneNormal.x).normalized;
+//    float cutRotation = Mathf.Atan2(cutDirection.y, cutDirection.x) * Mathf.Rad2Deg;
+
+
+//    float noteRotation = RotationFromNoteCutDirection(noteDirectionType);
+//    SetBackgroundRotation(noteRotation);
+
+
+//    bool isCenterIsLeft = IsCenterLeftOfCut(cutPlaneNormal, cutPoint);
+//    float missedAreaRotation = cutRotation - noteRotation + (isCenterIsLeft ? 180f : 0f);
+
+//    float cutPointDistance = cutPoint.magnitude;
+
+
+
+//}
+
+
+//private float CutAccuracy(float cutPointDistance)
+//{
+//    return Mathf.Clamp01(cutPointDistance / 0.3f);
+//}
+
+//private float RotationFromNoteCutDirection(NoteCutDirection cutDirection)
+//{
+
+//    switch (cutDirection)
+//    {
+//        case NoteCutDirection.Down: return 0f;
+//        case NoteCutDirection.DownRight: return 45f;
+//        case NoteCutDirection.Right: return 90f;
+//        case NoteCutDirection.UpRight: return 135f;
+//        case NoteCutDirection.Up: return 180f;
+//        case NoteCutDirection.UpLeft: return 225f;
+//        case NoteCutDirection.Left: return 270f;
+//        case NoteCutDirection.DownLeft: return 315f;
+//        default: return 0f;
+//    }
+//}
+
 //public void OnNoteCut(NoteController noteController, NoteCutInfo cutInfo)
 //{
 //    NoteData data = noteController.noteData;
@@ -253,3 +237,43 @@ namespace SaviorSwingStats
 //NoteData data = noteController.noteData;
 //Logger.log.Info($"{data.id}");
 
+
+//public void OnNoteCut(NoteData note, NoteCutInfo cutInfo, int multiplier)
+//{
+//    if (note.noteType == NoteType.Bomb)
+//        return;
+
+//    else
+//    {
+//        statline = new Statline(note.id+1, cutInfo.allIsOK, note.time, (int)note.noteType, note.cutDirection.ToString(), note.lineIndex, (int)note.noteLineLayer, CutAccuracy(cutInfo.cutDistanceToCenter), cutInfo.timeDeviation, multiplier, cutInfo.swingRatingCounter.beforeCutRating, cutInfo.swingRatingCounter.afterCutRating);
+
+//        statlines.Add(statline);
+//    }
+//}
+
+
+//public bool ProcessMissDistanceAndDirection(Vector3 localCutPoint, NoteCutDirection direction)
+//{
+//    int d = (int)direction;
+//    bool misIsMoreRightThanAbove = Math.Abs(localCutPoint.x) > Math.Abs(localCutPoint.y);
+//    bool isRight = localCutPoint.x > 0;
+//    bool isAbove = localCutPoint.y > 0;
+//    bool output;
+
+//    if (d == 2 || d == 3)
+//        output = isAbove ? true : false;
+
+//    else if (d == 8)
+//    {
+//        if (misIsMoreRightThanAbove)
+//            output = isRight ? true : false;
+//        else
+//            output = isAbove ? true : false;
+//    }
+
+//    else
+//        output = isRight ? true : false;
+
+//    return output;
+
+//}
