@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 
 namespace SaviorSwingStats
 {
-
     struct SongStats
     {
         public int Number;
