@@ -69,9 +69,26 @@ namespace SaviorSwingStats
             return array;
         }
 
+        public string[] GetStatlineArray3()
+        {
+            string[] array = new string[] {
+                Number.ToString(),
+                Time.ToString("0.000"),
+                Type == 0 ? "A":"B",
+                Direction.ToString(),
+                Column.ToString(),
+                Row.ToString(),
+                //CutDeviation.ToString("0.000"),
+                CutCenter.x.ToString("0.000"),
+                CutCenter.y.ToString("0.000"),
+                CutCenter.z.ToString("0.000"),
+                //TimeDeviation.ToString("0.000"),
+                GoodCut == true ? "T" : "F" };
+            return array;
+        }
         public string GetStatline()
         {
-            string[] array = GetStatlineArray2();
+            string[] array = GetStatlineArray3();
             string statline = string.Join(",", array);
             return statline;
         }

@@ -10,7 +10,8 @@ namespace SaviorSwingStats
 {
     public class StatKeeper
     {
-
+        //GameObject gridobject = new GameObject();
+        public bool _statkeeperActive;
         public string songName, songDifficulty;
         public int songNoteCount;
         private List<string> statsheet = new List<string>();
@@ -34,6 +35,14 @@ namespace SaviorSwingStats
 
         public StatKeeper()
         {
+            
+            //gridobject.AddComponent<Notegrid>();
+            //if (notegrid == null)
+            //{
+            //    notegrid = new Notegrid();
+            //    Logger.log.Info("notegrid created inside statkeeper class");
+            //}
+
             Logger.log.Info("2 New statkeeper active.");
             //statsheet.Clear();
             _scoreController = Resources.FindObjectsOfTypeAll<ScoreController>().First();
@@ -79,9 +88,8 @@ namespace SaviorSwingStats
                 Vector3 center = noteController.noteTransform.position;
                 Vector3 localCutPoint = cutInfo.cutPoint - center;
                 //NoteCutDirection directionType = data.cutDirection;
-                float cutMiss = ProcessMissDistanceAndDirection(localCutPoint, note.cutDirection) ? cutInfo.cutDistanceToCenter : -1f * cutInfo.cutDistanceToCenter;
-
-
+                //float cutMiss = ProcessMissDistanceAndDirection(localCutPoint, note.cutDirection) ? cutInfo.cutDistanceToCenter : -cutInfo.cutDistanceToCenter;
+                float cutMiss = 0f;
 
                 Statline statline = new Statline(
                     number: note.id + 1,
@@ -169,6 +177,14 @@ namespace SaviorSwingStats
 
             statsheet.Clear();
         }
+
+        //public void ClearGrid()
+        //{
+        //    if(notegrid != null)
+        //    {
+        //        notegrid = null;
+        //    }
+        //}
 
 
 
