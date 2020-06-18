@@ -10,13 +10,13 @@ namespace SaviorSwingStats
 {
     public class StatKeeper
     {
-        private GameObject gridParent;
+        //private GameObject gridParent;
         //private List<GameObject> gridPoints = new List<GameObject>();
 
         public bool _statkeeperActive;
         public string songName, songDifficulty;
         public int songNoteCount;
-       private List<Vector3> cuts = new List<Vector3>();
+        private List<Vector3> cuts = new List<Vector3>();
         private List<string> statsheet = new List<string>();
         //private readonly List<Statline> statlines = new List<Statline>();
 
@@ -25,6 +25,8 @@ namespace SaviorSwingStats
 
         private readonly ScoreController _scoreController;
         public ScoreController GetScoreController() => _scoreController;
+
+       
 
         private readonly GameplayCoreSceneSetupData _sceneData;
         public GameplayCoreSceneSetupData GetSceneData() => _sceneData;
@@ -38,14 +40,13 @@ namespace SaviorSwingStats
 
         public StatKeeper()
         {
-           
             
             Logger.log.Info("2 New statkeeper active.");
             //statsheet.Clear();
             _scoreController = Resources.FindObjectsOfTypeAll<ScoreController>().First();
             _sceneData = BS_Utils.Plugin.LevelData.GameplayCoreSceneSetupData;
             _BOM = Resources.FindObjectsOfTypeAll<BeatmapObjectManager>().First();
-
+           
             //_spawnController = Resources.FindObjectsOfTypeAll<BeatmapObjectSpawnController>().First();
             songDifficulty = _sceneData.difficultyBeatmap.difficulty.ToString().ToLower();
             songName = _sceneData.difficultyBeatmap.level.songName;
@@ -56,33 +57,33 @@ namespace SaviorSwingStats
             GetScoreController().noteWasMissedEvent += OnNoteMissed;
             GetBOM().noteWasCutEvent += OnNoteCut;
             //GetBOM().noteWasMissedEvent += OnNoteMissed;
-            BSEvents.songPaused += OnPause;
-            BSEvents.songUnpaused += UnPause;
+            //BSEvents.songPaused += OnPause;
+            //BSEvents.songUnpaused += UnPause;
 
         }
 
-        public void OnPause()
-        {
-            gridParent = new GameObject();
-            gridParent.transform.position = Vector3.zero;
-            Vector3 pointSize = Vector3.one * .01f;
-            Color pointColor = new Color(1f, 1f, 1f, 1f);
+        //public void OnPause()
+        //{
+        //    gridParent = new GameObject();
+        //    gridParent.transform.position = Vector3.zero;
+        //    Vector3 pointSize = Vector3.one * .01f;
+        //    Color pointColor = new Color(1f, 1f, 1f, 1f);
 
-            foreach (Vector3 cut in cuts)
-            {
-                GameObject cutPoint = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                cutPoint.transform.SetParent(gridParent.transform);
-                MeshRenderer renderer = cutPoint.GetComponent<MeshRenderer>();
-                renderer.material.SetColor("_Color", pointColor);
-                cutPoint.transform.position = cut;
-                cutPoint.transform.localScale = pointSize;
-            }
-        }
+        //    foreach (Vector3 cut in cuts)
+        //    {
+        //        GameObject cutPoint = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        //        cutPoint.transform.SetParent(gridParent.transform);
+        //        MeshRenderer renderer = cutPoint.GetComponent<MeshRenderer>();
+        //        renderer.material.SetColor("_Color", pointColor);
+        //        cutPoint.transform.position = cut;
+        //        cutPoint.transform.localScale = pointSize;
+        //    }
+        //}
 
-        public void UnPause()
-        {
-            GameObject.Destroy(gridParent);
-        }
+        //public void UnPause()
+        //{
+        //    GameObject.Destroy(gridParent);
+        //}
 
 
         public void OnNoteCut(INoteController noteController, NoteCutInfo cutInfo)

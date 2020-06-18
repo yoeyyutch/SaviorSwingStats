@@ -1,13 +1,15 @@
-﻿using IPA;
+﻿
+using System.Collections.Generic;
+using IPA;
+using UnityEngine.SceneManagement;
 using IPALogger = IPA.Logging.Logger;
+using IPAPluginManager = IPA.Loader.PluginManager;
 using BS_Utils.Utilities;
 using UnityEngine;
-using BeatSaberMarkupLanguage;
-using System.Collections.Generic;
+using Object = UnityEngine.Object;
+using IPA.Utilities;
 using System.IO;
 using System;
-using IPA.Utilities;
-
 
 namespace SaviorSwingStats
 {
@@ -17,8 +19,11 @@ namespace SaviorSwingStats
         internal static string PluginName => "SaviorSwingStats";
         readonly string directory = Path.Combine(UnityGame.UserDataPath, Plugin.PluginName);
 
+        // private GameScenesManager _sceneManager;
+        //public GameScenesManager GetScenesManager => _sceneManager;
+
         private StatKeeper statKeeper;
-        //private Notegrid notegrid;
+
 
         [Init]
         public void Init(IPALogger logger) { Logger.log = logger; }
@@ -26,16 +31,36 @@ namespace SaviorSwingStats
         [OnStart]
         public void OnApplicationStart()
         {
+            //_sceneManager = Resources.FindObjectsOfTypeAll<GameScenesManager>().First();
+
             Directory.CreateDirectory(directory);
+            GameObject gridGo = new GameObject("Grid",typeof(MonosSaviour));
+            Object.DontDestroyOnLoad(gridGo);
 
             BSEvents.levelCleared += OnSongExit;
             BSEvents.levelFailed += OnSongExit;
             BSEvents.levelQuit += OnSongExit;
             BSEvents.levelRestarted += OnSongExit;
+            BSEvents.songPaused += OnPause;
+            BSEvents.songUnpaused += OnUnpause;
+
+
+        }
+
+        public void OnPause()
+        {
+            Logger.log.Info("Song Paused");
+
+        }
+
+        public void OnUnpause()
+        {
+            Logger.log.Info("Song Unpaused");
         }
 
         public void OnGameSceneLoaded()
         {
+
             Logger.log.Info("1 GameSceneLoaded called");
             //evelData = new LevelData();
 
@@ -51,6 +76,21 @@ namespace SaviorSwingStats
 
         }
 
+        private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            Logger.log.Info("OnSceneLoaded: " + scene.name + " (" + mode + ")");
+        }
+
+        private void OnSceneUnloaded(Scene scene)
+        {
+            Logger.log.Info("OnSceneUnloaded: " + scene.name);
+        }
+
+        private void OnActiveSceneChanged(Scene previous, Scene current)
+        {
+            Logger.log.Info("OnActiveSceneChanged: " + previous.name + " -> " + current.name);
+        }
+
         private void OnSongExit(StandardLevelScenesTransitionSetupDataSO data, LevelCompletionResults resuts)
         {
             Logger.log.Info("3 Song ended");
@@ -60,12 +100,9 @@ namespace SaviorSwingStats
                 //string songStats = statKeeper.GetSongStats();
                 string filename = string.Join("_", statKeeper.songName, statKeeper.songDifficulty, ".txt");
                 string path = Path.Combine(directory, filename);
-                //string path = directory + @"\" + statKeeper.songName + "_" + statKeeper.songDifficulty + ".txt";
+
                 SaveSongStats(path, songStatList);
                 statKeeper.ClearStats();
-
-                //statKeeper.ClearGrid();
-                statKeeper._statkeeperActive = false;
                 statKeeper = null;
 
             }

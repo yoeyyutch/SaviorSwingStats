@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace SaviorSwingStats
 {
-    internal class Notegrid 
+    internal class Notegrid : MonoBehaviour
     {
         //public static IEnumerable<Material> AllMaterials { get; private set; }
         //private Material materialCopy;
@@ -19,7 +19,6 @@ namespace SaviorSwingStats
         public Notegrid()
         {
             Logger.log.Info("Notegrid.start called.");
-
 
            // materialCopy = FindObjectsOfType<Material>().FirstOrDefault();
             //Logger.log.Info(materialCopy.name);
