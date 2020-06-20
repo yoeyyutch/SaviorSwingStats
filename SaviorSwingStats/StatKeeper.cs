@@ -12,14 +12,13 @@ namespace SaviorSwingStats
     {
         //private GameObject gridParent;
         //private List<GameObject> gridPoints = new List<GameObject>();
-
         public bool _statkeeperActive;
         public string songName, songDifficulty;
         public int songNoteCount;
         private List<Vector3> cuts = new List<Vector3>();
         private List<string> statsheet = new List<string>();
         //private readonly List<Statline> statlines = new List<Statline>();
-
+        
         // private Statline statline = new Statline();
         // private SongStats songStats = new SongStats();
 
@@ -40,7 +39,14 @@ namespace SaviorSwingStats
 
         public StatKeeper()
         {
-            
+            Material[] materialArray = Resources.FindObjectsOfTypeAll<Material>();
+
+            foreach (Material material in materialArray)
+            {
+                Logger.log.Info("Matl: " + material.name.ToString());
+                Logger.log.Info("Shader    : " + material.shader.name.ToString());
+
+            }
             Logger.log.Info("2 New statkeeper active.");
             //statsheet.Clear();
             _scoreController = Resources.FindObjectsOfTypeAll<ScoreController>().First();
@@ -88,6 +94,7 @@ namespace SaviorSwingStats
 
         public void OnNoteCut(INoteController noteController, NoteCutInfo cutInfo)
         {
+
             NoteData note = noteController.noteData;
             if (note.noteType == NoteType.Bomb)
                 return;

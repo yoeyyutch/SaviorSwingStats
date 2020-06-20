@@ -12,14 +12,14 @@ namespace SaviorSwingStats
     {
         //public static IEnumerable<Material> AllMaterials { get; private set; }
         //private Material materialCopy;
-        //private GameObject[] gridPlane = new GameObject[12] as GameObject[];
+        private GameObject[] gridPlane = new GameObject[12];
 
         //private GameObject[] gridPlane;
 
         public Notegrid()
         {
             Logger.log.Info("Notegrid.start called.");
-
+            
            // materialCopy = FindObjectsOfType<Material>().FirstOrDefault();
             //Logger.log.Info(materialCopy.name);
 
@@ -37,6 +37,29 @@ namespace SaviorSwingStats
             Logger.log.Info(cute.GetComponent<MeshRenderer>().material.name);
             Logger.log.Info(cute.GetComponent<MeshRenderer>().material.color.ToString());
         }
+
+        void DrawGrid()
+        {
+            float[] xGrid = { -.9f, -.3f, .3f, .9f };
+            float[] yGrid = { 0.83f, 1.38f, 1.88f };
+            int i = 0;
+
+            Vector3 scale = new Vector3(0.5f, 0.5f, 0.5f);
+            for (int x = 0; x < 4; x++)
+            {
+                for (int y = 0; y < 3; y++)
+                {
+                    gridPlane[i] = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                    gridPlane[i].transform.position = new Vector3(xGrid[x], yGrid[y], 1f);
+                    gridPlane[i].transform.localScale = scale;
+                    Renderer renderer = gridPlane[i].GetComponent<Renderer>();
+                    renderer.material = materialCopy;
+                    materialCopy.SetColor("_Color", Color.white);
+
+                    i++;
+                }
+                Logger.log.Info("Grid created");
+            }
 
     }
 
@@ -114,101 +137,14 @@ namespace SaviorSwingStats
 //{
 //Logger.log.Info("Starting foreach loop for drawing grid");
 
-//float[] xGrid = { -.9f, -.3f, .3f, .9f };
-//float[] yGrid = { 0.83f, 1.38f, 1.88f };
-//int i = 0;
 
-//Vector3 scale = new Vector3(0.5f, 0.5f, 0.5f);
-//for (int x = 0; x < 4; x++)
-//{
-//    for (int y = 0; y < 3; y++)
-//    {
-//        gridPlane[i] = GameObject.CreatePrimitive(PrimitiveType.Cube);
-//        gridPlane[i].transform.position = new Vector3(xGrid[x], yGrid[y], 1f);
-//        gridPlane[i].transform.localScale = scale;
-//        Renderer renderer = gridPlane[i].GetComponent<Renderer>();
-//        renderer.material = materialCopy;
-//        materialCopy.SetColor("_Color", Color.white);
-
-//        i++;
-//    }
-//    Logger.log.Info("Grid created");
 //}
 
 //}
 //}
 
 
-//void OnDrawGizmos()
-//{
-
-//    foreach (Vector3 xyz in xyGrid)
-//    {
-
-//        Gizmos.color = new Color(1f, 1f, 1f, 0.5f);
-//        Gizmos.DrawCube(xyz, Vector3.one * 0.5f);
-//    }
-//Material material = new Material(Shader.Find("Transparent/Diffuse"));
-//material.color = Color.white;
-//grid = new GameObject[12];
-//Vector3 scale = new Vector3(0.5f, 0.5f, 0.5f);
-//for (int x = 0; x < 4; x++)
-//{
-//    for (int y = 0; y < 3; y++)
-//    {
-//        grid[i] = GameObject.CreatePrimitive(PrimitiveType.Cube);
-//        grid[i].transform.position = new Vector3(xGrid[x], yGrid[y], 1f);
-//        grid[i].transform.localScale = scale;
-//        MeshRenderer MR = grid[i].AddComponent<MeshRenderer>() as MeshRenderer;
-//        grid[i].GetComponent<MeshRenderer>().material = material;
-//        i++;
-//    }
-
-//}
-
-//}
-
-//void DrawGrid()
-//{
-//    grid = new GameObject[12];
-//    grid[0] = GameObject.CreatePrimitive(PrimitiveType.Cube);
-//    grid[0].transform.position = new Vector3(0, 0.5f, 0);
-
-//}
-//public static void OnLoad()
-//{
-
-//    if (Instance == null)
-//    {
-//        GameObject Notegrid_GO = new GameObject("SaviorSwingStats | Notegrid");
-//        DontDestroyOnLoad(Notegrid_GO);
-//        Instance = Notegrid_GO.AddComponent<Notegrid>();
-//    }
-//}
 
 
-//void OnDrawGizmos()
-//{
-//    Logger.log.Info("DrawGrid called");
-//    Vector3 gridsize = new Vector3(.05f, .05f, .05f);
 
 
-//    grid[0] = new Vector3(-.9f, .83f, 0f);
-//    grid[1] = new Vector3(-.3f, .83f, 0f);
-//    grid[2] = new Vector3(.3f, .83f, 0f);
-//    grid[3] = new Vector3(.9f, .83f, 0f);
-//    grid[4] = new Vector3(-.9f, 1.355f, 0f);
-//    grid[5] = new Vector3(-.3f, 1.355f, 0f);
-//    grid[6] = new Vector3(.3f, 1.355f, 0f);
-//    grid[7] = new Vector3(.9f, 1.355f, 0f);
-//    grid[8] = new Vector3(-.9f, 1.88f, 0f);
-//    grid[9] = new Vector3(-.3f, 1.88f, 0f);
-//    grid[10] = new Vector3(.3f, 1.88f, 0f);
-//    grid[11] = new Vector3(.9f, 1.88f, 0f);
-
-//    for (int i = 0; i < 12; i++)
-//    {
-//        Gizmos.color = Color.yellow;
-//        Gizmos.DrawWireCube(grid[i], gridsize);
-//    }
-//}

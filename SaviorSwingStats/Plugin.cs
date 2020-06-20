@@ -16,6 +16,7 @@ namespace SaviorSwingStats
     [Plugin(RuntimeOptions.SingleStartInit)]
     public class Plugin
     {
+
         internal static string PluginName => "SaviorSwingStats";
         readonly string directory = Path.Combine(UnityGame.UserDataPath, Plugin.PluginName);
 
@@ -31,11 +32,15 @@ namespace SaviorSwingStats
         [OnStart]
         public void OnApplicationStart()
         {
-            //_sceneManager = Resources.FindObjectsOfTypeAll<GameScenesManager>().First();
+            SceneManager.activeSceneChanged += OnActiveSceneChanged;
+
+
+
 
             Directory.CreateDirectory(directory);
-            GameObject gridGo = new GameObject("Grid",typeof(MonosSaviour));
+            GameObject gridGo = new GameObject("Grid", typeof(MonosSaviour));
             Object.DontDestroyOnLoad(gridGo);
+
 
             BSEvents.levelCleared += OnSongExit;
             BSEvents.levelFailed += OnSongExit;
@@ -46,6 +51,10 @@ namespace SaviorSwingStats
 
 
         }
+
+
+
+
 
         public void OnPause()
         {
@@ -89,6 +98,18 @@ namespace SaviorSwingStats
         private void OnActiveSceneChanged(Scene previous, Scene current)
         {
             Logger.log.Info("OnActiveSceneChanged: " + previous.name + " -> " + current.name);
+            DebugMaterials(current);
+        }
+
+        void DebugMaterials(Scene scene)
+        {
+            List<Material> MaterialList = new List<Material>(Resources.FindObjectsOfTypeAll<Material>());
+            foreach(Material m in MaterialList)
+            {
+                Logger.log.Info("Material: " + m.name.ToString());
+                Logger.log.Info("Shader  : " + m.shader.
+            }
+            
         }
 
         private void OnSongExit(StandardLevelScenesTransitionSetupDataSO data, LevelCompletionResults resuts)
