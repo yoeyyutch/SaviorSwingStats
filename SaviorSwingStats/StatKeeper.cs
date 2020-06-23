@@ -4,19 +4,21 @@ using System.Linq;
 using UnityEngine;
 using BS_Utils.Utilities;
 using System;
+using Object = UnityEngine.Object;
 //using Newtonsoft.Json;
 
 namespace SaviorSwingStats
 {
     public class StatKeeper
     {
-        //private GameObject gridParent;
-        //private List<GameObject> gridPoints = new List<GameObject>();
-        public bool _statkeeperActive;
+		int cutnumber = 0;
+        public GameObject CutChart;
+		public List<GameObject> cutPoints;
+        //public bool _statkeeperActive;
         public string songName, songDifficulty;
         public int songNoteCount;
-        private List<Vector3> cuts = new List<Vector3>();
-        private List<string> statsheet = new List<string>();
+		//private static List<Vector3> cuts = new List<Vector3>();
+		private List<string> statsheet = new List<string>();
         //private readonly List<Statline> statlines = new List<Statline>();
         
         // private Statline statline = new Statline();
@@ -32,67 +34,57 @@ namespace SaviorSwingStats
 
 
         private readonly BeatmapObjectManager _BOM;
-        public BeatmapObjectManager GetBOM() => _BOM;
+
+		//public static List<Vector3> Cuts => cuts;
+
+		public BeatmapObjectManager GetBOM() => _BOM;
 
         //private readonly NoteController _noteController;
         //public NoteController GetNoteController() => _noteController;
 
         public StatKeeper()
         {
-            Material[] materialArray = Resources.FindObjectsOfTypeAll<Material>();
-
-            foreach (Material material in materialArray)
-            {
-                Logger.log.Info("Matl: " + material.name.ToString());
-                Logger.log.Info("Shader    : " + material.shader.name.ToString());
-
-            }
             Logger.log.Info("2 New statkeeper active.");
-            //statsheet.Clear();
+			CutChart = new GameObject();
+			Object.DontDestroyOnLoad(CutChart);
+			//Utilities.SetGameObjectTransform(CutChart, Vector3.zero, Quaternion.identity, Vector3.zero);
+			CutChart.SetActive(true);
+			CutChart.transform.position = Vector3.zero;
+			CutChart.transform.rotation = Quaternion.identity;
+			CutChart.transform.localScale = Vector3.zero;
+
+			cutPoints = new List<GameObject>();
+			
+
             _scoreController = Resources.FindObjectsOfTypeAll<ScoreController>().First();
             _sceneData = BS_Utils.Plugin.LevelData.GameplayCoreSceneSetupData;
             _BOM = Resources.FindObjectsOfTypeAll<BeatmapObjectManager>().First();
-           
-            //_spawnController = Resources.FindObjectsOfTypeAll<BeatmapObjectSpawnController>().First();
+
             songDifficulty = _sceneData.difficultyBeatmap.difficulty.ToString().ToLower();
             songName = _sceneData.difficultyBeatmap.level.songName;
             songNoteCount = _sceneData.difficultyBeatmap.beatmapData.notesCount;
-            //statsheet.Capacity = songNoteCount;
 
-            //GetScoreController().noteWasCutEvent += OnNoteCut;
             GetScoreController().noteWasMissedEvent += OnNoteMissed;
             GetBOM().noteWasCutEvent += OnNoteCut;
-            //GetBOM().noteWasMissedEvent += OnNoteMissed;
+
             //BSEvents.songPaused += OnPause;
             //BSEvents.songUnpaused += UnPause;
 
         }
 
-        //public void OnPause()
-        //{
-        //    gridParent = new GameObject();
-        //    gridParent.transform.position = Vector3.zero;
-        //    Vector3 pointSize = Vector3.one * .01f;
-        //    Color pointColor = new Color(1f, 1f, 1f, 1f);
-
-        //    foreach (Vector3 cut in cuts)
-        //    {
-        //        GameObject cutPoint = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        //        cutPoint.transform.SetParent(gridParent.transform);
-        //        MeshRenderer renderer = cutPoint.GetComponent<MeshRenderer>();
-        //        renderer.material.SetColor("_Color", pointColor);
-        //        cutPoint.transform.position = cut;
-        //        cutPoint.transform.localScale = pointSize;
-        //    }
-        //}
-
-        //public void UnPause()
-        //{
-        //    GameObject.Destroy(gridParent);
-        //}
+		//public void OnPause()
+		//{
 
 
-        public void OnNoteCut(INoteController noteController, NoteCutInfo cutInfo)
+		//}
+
+		//public void UnPause()
+		//{
+		//	CutChart.transform.localScale = Vector3.zero;
+		//}
+
+
+		public void OnNoteCut(INoteController noteController, NoteCutInfo cutInfo)
         {
 
             NoteData note = noteController.noteData;
@@ -103,8 +95,7 @@ namespace SaviorSwingStats
             {
                 Vector3 centerOfNote = noteController.noteTransform.position;
                 Vector3 centerOFCut = cutInfo.cutPoint - centerOfNote;
-                //NoteCutDirection directionType = data.cutDirection;
-                //float cutMiss = ProcessMissDistanceAndDirection(localCutPoint, note.cutDirection) ? cutInfo.cutDistanceToCenter : -cutInfo.cutDistanceToCenter;
+
                 float cutMiss = 0f;
 
                 Statline statline = new Statline(
@@ -121,7 +112,22 @@ namespace SaviorSwingStats
                     cutCenter: cutInfo.cutPoint);
 
                 statsheet.Add(statline.GetStatline());
-                cuts.Add(centerOFCut);
+
+				
+				DrawCube
+					(
+					index: cutnumber, 
+					parent: CutChart.transform, 
+					cutPosition: cutInfo.cutPoint, 
+					scaleFactor: 0.01f, 
+					color: Color.white, 
+					shader: "Custom / Glowing", 
+					materialName: "Cut_Material",
+					missDistance: cutInfo.cutDistanceToCenter
+					);
+				cutnumber++;
+
+
 
             }
         }
@@ -149,9 +155,49 @@ namespace SaviorSwingStats
             }
         }
 
+		public void DrawCube(int index, Transform parent, Vector3 cutPosition, float scaleFactor, Color color, string shader, string materialName, float missDistance)
+		{
+			float m = 1f;
+			//float m = Mathf.Clamp01(missDistance*5f);
+			Color gradient = new Color(m, m, m, 1f);
 
+			cutPoints.Insert(index, GameObject.CreatePrimitive(PrimitiveType.Cube));
+			cutPoints[index].SetActive(true);
+			//GameObject newPoint = GameObject.CreatePrimitive(PrimitiveType.Cube);
+			cutPoints[index].transform.SetParent(parent);
+			cutPoints[index].transform.position = cutPosition;
+			cutPoints[index].transform.localScale = Vector3.one * scaleFactor;
+			Renderer renderer = cutPoints[index].GetComponent<Renderer>();
+			renderer.material = SetMaterial(Color.white, "cut_material");
+			
+			
 
-        public List<string> GetSongStatsheet()
+		}
+		private Material SetMaterial(Color color, string name)
+		{
+			Material output;
+			Material shaderCheck = new Material(Shader.Find("Custom/Glowing"));
+			if (shaderCheck == null)
+			{
+				Material missingMaterial = new Material(Shader.Find("Hidden/InternalErrorShader"));
+				output = missingMaterial;
+			}
+
+			else
+			{
+				output = shaderCheck;
+			}
+
+			output.name = name;
+			output.SetColor("_Color", color);
+
+			Logger.log.Info("Matl : " + output.name);
+			Logger.log.Info("Shader    : " + output.shader.name);
+
+			return output;
+		}
+
+		public List<string> GetSongStatsheet()
         {
             Logger.log.Info("4 GetSongStatSheetCalled");
             return statsheet;
@@ -179,7 +225,9 @@ namespace SaviorSwingStats
 //    return Vector3.Dot(lineNormal, -cutPoint) > 0f;
 //}
 
-
+//NoteCutDirection directionType = data.cutDirection;
+//float cutMiss = ProcessMissDistanceAndDirection(localCutPoint, 
+//note.cutDirection) ? cutInfo.cutDistanceToCenter : -cutInfo.cutDistanceToCenter;
 
 //public string GetSongStats()
 //{

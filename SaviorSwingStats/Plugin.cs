@@ -20,11 +20,8 @@ namespace SaviorSwingStats
         internal static string PluginName => "SaviorSwingStats";
         readonly string directory = Path.Combine(UnityGame.UserDataPath, Plugin.PluginName);
 
-        // private GameScenesManager _sceneManager;
-        //public GameScenesManager GetScenesManager => _sceneManager;
-
         private StatKeeper statKeeper;
-
+        private GameObject plotter;
 
         [Init]
         public void Init(IPALogger logger) { Logger.log = logger; }
@@ -32,104 +29,102 @@ namespace SaviorSwingStats
         [OnStart]
         public void OnApplicationStart()
         {
-            SceneManager.activeSceneChanged += OnActiveSceneChanged;
-
-
-
-
+            Logger.log.Info($"{PluginName} has started.");
             Directory.CreateDirectory(directory);
-            GameObject gridGo = new GameObject("Grid", typeof(MonosSaviour));
-            Object.DontDestroyOnLoad(gridGo);
+		
+			plotter = new GameObject("Grid", typeof(MonosSaviour));
+			Object.DontDestroyOnLoad(plotter);
+			plotter.SetActive(true);
+			plotter.transform.position = Vector3.zero;
+			plotter.transform.rotation = Quaternion.identity;
+			plotter.transform.localScale = Vector3.zero;
+			AddEvents();
+		}
 
+        [OnExit]
+        public void OnApplicationExit()
+        {
+			Object.Destroy(plotter);
+            Logger.log.Info($"{PluginName} has exited.");
+            RemoveEvents();
+        }
 
+        private void AddEvents()
+        {
+            BSEvents.gameSceneLoaded += OnGameSceneLoaded;
             BSEvents.levelCleared += OnSongExit;
             BSEvents.levelFailed += OnSongExit;
             BSEvents.levelQuit += OnSongExit;
             BSEvents.levelRestarted += OnSongExit;
             BSEvents.songPaused += OnPause;
-            BSEvents.songUnpaused += OnUnpause;
-
-
+			BSEvents.songUnpaused += OnUnpause;
         }
+        private void RemoveEvents()
+        {
 
-
-
-
+            BSEvents.gameSceneLoaded -= OnGameSceneLoaded;
+            BSEvents.levelCleared -= OnSongExit;
+            BSEvents.levelFailed -= OnSongExit;
+            BSEvents.levelQuit -= OnSongExit;
+            BSEvents.levelRestarted -= OnSongExit;
+            BSEvents.songPaused -= OnPause;
+            BSEvents.songUnpaused -= OnUnpause;
+        }
 
         public void OnPause()
         {
             Logger.log.Info("Song Paused");
-
-        }
+			statKeeper.CutChart.transform.localScale = Vector3.one;
+			plotter.transform.localScale = Vector3.one;
+			Logger.log.Info("Pause: Show grid");
+		}
 
         public void OnUnpause()
         {
-            Logger.log.Info("Song Unpaused");
-        }
+			statKeeper.CutChart.transform.localScale = Vector3.zero;
+			plotter.transform.localScale = Vector3.zero;
+			Logger.log.Info("Unpause: hide grid");
+		}
 
         public void OnGameSceneLoaded()
         {
 
-            Logger.log.Info("1 GameSceneLoaded called");
+			if (statKeeper == null)
+			{
+				statKeeper = new StatKeeper();
+			}
+			else
+			{
+				Logger.log.Warn("E Statkeeper already exists.");
+			}
+			statKeeper.CutChart.transform.localScale = Vector3.one;
+			plotter.transform.localScale = Vector3.one;
+			//plotter = new GameObject("Grid", typeof(MonosSaviour));
+			//Object.DontDestroyOnLoad(plotter);
+			//plotter.SetActive(true);
+
+			Logger.log.Info("1 GameSceneLoaded called");
             //evelData = new LevelData();
-
-
-            if (statKeeper == null)
-            {
-                statKeeper = new StatKeeper();
-            }
-            else
-            {
-                Logger.log.Warn("E Statkeeper already exists.");
-            }
-
-        }
-
-        private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-        {
-            Logger.log.Info("OnSceneLoaded: " + scene.name + " (" + mode + ")");
-        }
-
-        private void OnSceneUnloaded(Scene scene)
-        {
-            Logger.log.Info("OnSceneUnloaded: " + scene.name);
-        }
-
-        private void OnActiveSceneChanged(Scene previous, Scene current)
-        {
-            Logger.log.Info("OnActiveSceneChanged: " + previous.name + " -> " + current.name);
-            DebugMaterials(current);
-        }
-
-        void DebugMaterials(Scene scene)
-        {
-            List<Material> MaterialList = new List<Material>(Resources.FindObjectsOfTypeAll<Material>());
-            foreach(Material m in MaterialList)
-            {
-                Logger.log.Info("Material: " + m.name.ToString());
-                Logger.log.Info("Shader  : " + m.shader.
-            }
-            
         }
 
         private void OnSongExit(StandardLevelScenesTransitionSetupDataSO data, LevelCompletionResults resuts)
         {
-            Logger.log.Info("3 Song ended");
+			statKeeper.CutChart.transform.localScale = Vector3.one;
+			plotter.transform.localScale = Vector3.one;
+			Logger.log.Info("3 Song ended");
             if (statKeeper != null)
             {
                 List<string> songStatList = statKeeper.GetSongStatsheet();
                 //string songStats = statKeeper.GetSongStats();
                 string filename = string.Join("_", statKeeper.songName, statKeeper.songDifficulty, ".txt");
                 string path = Path.Combine(directory, filename);
-
-                SaveSongStats(path, songStatList);
+				statKeeper.cutPoints.Clear();
+				SaveSongStats(path, songStatList);
                 statKeeper.ClearStats();
-                statKeeper = null;
-
             }
 
-            if (statKeeper == null)
-                Logger.log.Info("7 Statkeeper deactivated.");
+            //if (statKeeper == null)
+            //    Logger.log.Info("7 Statkeeper deactivated.");
         }
 
         private void SaveSongStats(string path, List<string> statlist)
@@ -142,36 +137,6 @@ namespace SaviorSwingStats
             Logger.log.Info("5 Song stats saved to file.");
 
         }
-
-        [OnEnable]
-        public void OnEnable() => Load();
-
-        [OnDisable]
-        public void OnDisable() => Unload();
-
-        private void Load()
-        {
-            AddEvents();
-            Logger.log.Info($"{PluginName} has started.");
-        }
-
-        private void Unload()
-        {
-            RemoveEvents();
-        }
-
-        private void AddEvents()
-        {
-            RemoveEvents();
-            BSEvents.gameSceneLoaded += OnGameSceneLoaded;
-        }
-
-        private void RemoveEvents()
-        {
-            BSEvents.gameSceneLoaded -= OnGameSceneLoaded;
-        }
-
-
     }
 }
 
@@ -188,4 +153,20 @@ namespace SaviorSwingStats
 //        sw.WriteLine("****** Song completed at " + DateTime.Now);
 //        sw.WriteLine(stats);
 //    }
+//}
+
+//private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+//{
+//    Logger.log.Info("OnSceneLoaded: " + scene.name + " (" + mode + ")");
+//}
+
+//private void OnSceneUnloaded(Scene scene)
+//{
+//    Logger.log.Info("OnSceneUnloaded: " + scene.name);
+//}
+
+//private void OnActiveSceneChanged(Scene previous, Scene current)
+//{
+//    Logger.log.Info("OnActiveSceneChanged: " + previous.name + " -> " + current.name);
+//    DebugMaterials(current);
 //}

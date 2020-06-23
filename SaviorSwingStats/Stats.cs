@@ -29,6 +29,7 @@ namespace SaviorSwingStats
             NoteCutInfo = null;
             NotePosition = Vector3.zero;
         }
+
     }
 }
 //private readonly INoteController noteController;
