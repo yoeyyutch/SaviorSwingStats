@@ -21,7 +21,7 @@ namespace SaviorSwingStats
         readonly string directory = Path.Combine(UnityGame.UserDataPath, Plugin.PluginName);
 
         private StatKeeper statKeeper;
-        private GameObject plotter;
+        //private GameObject plotter;
 
         [Init]
         public void Init(IPALogger logger) { Logger.log = logger; }
@@ -32,25 +32,21 @@ namespace SaviorSwingStats
             Logger.log.Info($"{PluginName} has started.");
             Directory.CreateDirectory(directory);
 		
-			plotter = new GameObject("Grid", typeof(MonosSaviour));
-			Object.DontDestroyOnLoad(plotter);
-			plotter.SetActive(true);
-			plotter.transform.position = Vector3.zero;
-			plotter.transform.rotation = Quaternion.identity;
-			plotter.transform.localScale = Vector3.zero;
+	
 			AddEvents();
 		}
 
         [OnExit]
         public void OnApplicationExit()
         {
-			Object.Destroy(plotter);
+			//Object.Destroy(plotter);
             Logger.log.Info($"{PluginName} has exited.");
             RemoveEvents();
         }
 
         private void AddEvents()
         {
+			BSEvents.menuSceneLoaded += OnMenuSceneLoaded;
             BSEvents.gameSceneLoaded += OnGameSceneLoaded;
             BSEvents.levelCleared += OnSongExit;
             BSEvents.levelFailed += OnSongExit;
@@ -61,8 +57,8 @@ namespace SaviorSwingStats
         }
         private void RemoveEvents()
         {
-
-            BSEvents.gameSceneLoaded -= OnGameSceneLoaded;
+			BSEvents.menuSceneLoaded -= OnMenuSceneLoaded;
+			BSEvents.gameSceneLoaded -= OnGameSceneLoaded;
             BSEvents.levelCleared -= OnSongExit;
             BSEvents.levelFailed -= OnSongExit;
             BSEvents.levelQuit -= OnSongExit;
@@ -74,21 +70,37 @@ namespace SaviorSwingStats
         public void OnPause()
         {
             Logger.log.Info("Song Paused");
-			statKeeper.CutChart.transform.localScale = Vector3.one;
-			plotter.transform.localScale = Vector3.one;
+			//statKeeper.CutChart.transform.localScale = Vector3.one;
+			//plotter.transform.localScale = Vector3.one;
 			Logger.log.Info("Pause: Show grid");
 		}
 
         public void OnUnpause()
         {
-			statKeeper.CutChart.transform.localScale = Vector3.zero;
-			plotter.transform.localScale = Vector3.zero;
+			//statKeeper.CutChart.transform.localScale = Vector3.zero;
+			//plotter.transform.localScale = Vector3.zero;
 			Logger.log.Info("Unpause: hide grid");
+		}
+
+		public void OnMenuSceneLoaded()
+		{
+
 		}
 
         public void OnGameSceneLoaded()
         {
-
+			//plotter = new GameObject("Grid", typeof(MonosSaviour));
+			//Object.DontDestroyOnLoad(plotter);
+			//plotter.SetActive(true);
+			//plotter.transform.position = Vector3.zero;
+			//plotter.transform.rotation = Quaternion.identity;
+			//plotter.transform.localScale = Vector3.zero;
+			if (statKeeper != null)
+			{
+				statKeeper.Clearcuts();
+				Object.Destroy(statKeeper.CutChart);
+				statKeeper = null;
+			}
 			if (statKeeper == null)
 			{
 				statKeeper = new StatKeeper();
@@ -98,7 +110,7 @@ namespace SaviorSwingStats
 				Logger.log.Warn("E Statkeeper already exists.");
 			}
 			statKeeper.CutChart.transform.localScale = Vector3.one;
-			plotter.transform.localScale = Vector3.one;
+			//plotter.transform.localScale = Vector3.one;
 			//plotter = new GameObject("Grid", typeof(MonosSaviour));
 			//Object.DontDestroyOnLoad(plotter);
 			//plotter.SetActive(true);
@@ -109,8 +121,8 @@ namespace SaviorSwingStats
 
         private void OnSongExit(StandardLevelScenesTransitionSetupDataSO data, LevelCompletionResults resuts)
         {
-			statKeeper.CutChart.transform.localScale = Vector3.one;
-			plotter.transform.localScale = Vector3.one;
+			statKeeper.CutChart.transform.localScale = Vector3.zero;
+			//plotter.transform.localScale = Vector3.one;
 			Logger.log.Info("3 Song ended");
             if (statKeeper != null)
             {
@@ -118,9 +130,10 @@ namespace SaviorSwingStats
                 //string songStats = statKeeper.GetSongStats();
                 string filename = string.Join("_", statKeeper.songName, statKeeper.songDifficulty, ".txt");
                 string path = Path.Combine(directory, filename);
-				statKeeper.cutPoints.Clear();
+				
 				SaveSongStats(path, songStatList);
                 statKeeper.ClearStats();
+
             }
 
             //if (statKeeper == null)
@@ -129,10 +142,13 @@ namespace SaviorSwingStats
 
         private void SaveSongStats(string path, List<string> statlist)
         {
-            // Column headers added only once to the file.
-            string header = "Note ID, Note Time, Note type, Direction, Lane, Level, X, Y, Z, Good Cut, " + DateTime.Now.ToString() + Environment.NewLine;
+			// header for statline 3;
+			//string header = "Note ID, Note Time, Note type, Direction, Lane, Level, X, Y, Z, Good Cut, " + DateTime.Now.ToString() + Environment.NewLine;
 
-            File.AppendAllText(path, header);
+			// header for statline 4:
+			string header = "ID, Time, Type, Direction, Lane, Level, NoteX, NoteY, NoteZ, CutX, CutY, CutZ, NormalX, NormalY, NormalZ, MissDistance, TimeDeviation, Good Cut?" + DateTime.Now.ToString() + Environment.NewLine; 
+
+			File.AppendAllText(path, header);
             File.AppendAllLines(path, statlist);
             Logger.log.Info("5 Song stats saved to file.");
 

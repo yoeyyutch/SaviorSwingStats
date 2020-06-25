@@ -12,7 +12,7 @@ namespace SaviorSwingStats
 		//public GameObject NotePlotParent;
 		private GameObject[] notePlot;
 
-		private Color noteColor = new Color(.5f, 1f, 0f, 0.25f);
+		private Color noteColor = new Color(0f, 1f, 0.5f, 0.25f);
 
 
 
@@ -57,18 +57,19 @@ namespace SaviorSwingStats
 		void DrawNotes()
 		{
 			notePlot = new GameObject[12];
-
+			//Formuala that Beat Saber uses for note height values: 
+			// return Mathf.Clamp((playerHeight - 1.8f) * 0.5f, -0.2f, 0.6f);
 			float[] xGrid = { -.9f, -.3f, .3f, .9f };
 			float[] yGrid = { 0.9f, 1.4f, 1.9f };
 
-			float scale = .01f;
+			float scale = .014f;
 
 			int i = 0;
 			for (int x = 0; x < 4; x++)
 			{
 				for (int y = 0; y < 3; y++)
 				{
-					notePlot[i] = GameObject.CreatePrimitive(PrimitiveType.Cube);
+					notePlot[i] = GameObject.CreatePrimitive(PrimitiveType.Sphere);
 					Object.DontDestroyOnLoad(notePlot[i]);
 					notePlot[i].SetActive(true);
 					notePlot[i].transform.SetParent(transform);
