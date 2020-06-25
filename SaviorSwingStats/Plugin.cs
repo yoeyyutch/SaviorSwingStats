@@ -18,10 +18,9 @@ namespace SaviorSwingStats
     {
 
         internal static string PluginName => "SaviorSwingStats";
-        readonly string directory = Path.Combine(UnityGame.UserDataPath, Plugin.PluginName);
+        readonly string songStatsDirectory = Path.Combine(UnityGame.UserDataPath, Plugin.PluginName);
 
         private StatKeeper statKeeper;
-        //private GameObject plotter;
 
         [Init]
         public void Init(IPALogger logger) { Logger.log = logger; }
@@ -30,9 +29,9 @@ namespace SaviorSwingStats
         public void OnApplicationStart()
         {
             Logger.log.Info($"{PluginName} has started.");
-            Directory.CreateDirectory(directory);
-		
-	
+			BSEvents.gameSceneLoaded += OnGameSceneLoaded;
+
+
 			AddEvents();
 		}
 
@@ -47,7 +46,7 @@ namespace SaviorSwingStats
         private void AddEvents()
         {
 			BSEvents.menuSceneLoaded += OnMenuSceneLoaded;
-            BSEvents.gameSceneLoaded += OnGameSceneLoaded;
+            
             BSEvents.levelCleared += OnSongExit;
             BSEvents.levelFailed += OnSongExit;
             BSEvents.levelQuit += OnSongExit;
@@ -69,36 +68,27 @@ namespace SaviorSwingStats
 
         public void OnPause()
         {
-            Logger.log.Info("Song Paused");
-			//statKeeper.CutChart.transform.localScale = Vector3.one;
-			//plotter.transform.localScale = Vector3.one;
-			Logger.log.Info("Pause: Show grid");
+           // Logger.log.Info("Song Paused");
+
 		}
 
         public void OnUnpause()
         {
-			//statKeeper.CutChart.transform.localScale = Vector3.zero;
-			//plotter.transform.localScale = Vector3.zero;
-			Logger.log.Info("Unpause: hide grid");
+			// Logger.log.Info("Song unpaused");
 		}
 
 		public void OnMenuSceneLoaded()
 		{
-
+			 Logger.log.Info("MenuSceneLoaded callled");
 		}
 
-        public void OnGameSceneLoaded()
+		public void OnGameSceneLoaded()
         {
-			//plotter = new GameObject("Grid", typeof(MonosSaviour));
-			//Object.DontDestroyOnLoad(plotter);
-			//plotter.SetActive(true);
-			//plotter.transform.position = Vector3.zero;
-			//plotter.transform.rotation = Quaternion.identity;
-			//plotter.transform.localScale = Vector3.zero;
+
 			if (statKeeper != null)
 			{
 				statKeeper.Clearcuts();
-				Object.Destroy(statKeeper.CutChart);
+
 				statKeeper = null;
 			}
 			if (statKeeper == null)
@@ -107,29 +97,24 @@ namespace SaviorSwingStats
 			}
 			else
 			{
-				Logger.log.Warn("E Statkeeper already exists.");
 			}
 			statKeeper.CutChart.transform.localScale = Vector3.one;
-			//plotter.transform.localScale = Vector3.one;
-			//plotter = new GameObject("Grid", typeof(MonosSaviour));
-			//Object.DontDestroyOnLoad(plotter);
-			//plotter.SetActive(true);
+
 
 			Logger.log.Info("1 GameSceneLoaded called");
-            //evelData = new LevelData();
+
         }
 
         private void OnSongExit(StandardLevelScenesTransitionSetupDataSO data, LevelCompletionResults resuts)
         {
-			statKeeper.CutChart.transform.localScale = Vector3.zero;
-			//plotter.transform.localScale = Vector3.one;
+
 			Logger.log.Info("3 Song ended");
             if (statKeeper != null)
             {
                 List<string> songStatList = statKeeper.GetSongStatsheet();
                 //string songStats = statKeeper.GetSongStats();
                 string filename = string.Join("_", statKeeper.songName, statKeeper.songDifficulty, ".txt");
-                string path = Path.Combine(directory, filename);
+                string path = Path.Combine(songStatsDirectory, filename);
 				
 				SaveSongStats(path, songStatList);
                 statKeeper.ClearStats();
@@ -142,6 +127,8 @@ namespace SaviorSwingStats
 
         private void SaveSongStats(string path, List<string> statlist)
         {
+			Directory.CreateDirectory(songStatsDirectory);
+
 			// header for statline 3;
 			//string header = "Note ID, Note Time, Note type, Direction, Lane, Level, X, Y, Z, Good Cut, " + DateTime.Now.ToString() + Environment.NewLine;
 
@@ -155,34 +142,3 @@ namespace SaviorSwingStats
         }
     }
 }
-
-//using (StreamWriter sw = File.AppendText(path))
-//{
-//    sw.WriteLine("****** Song completed at " + DateTime.Now);
-//}
-
-
-//private void SaveSongStats(string path, string stats)
-//{
-//    using (StreamWriter sw = File.AppendText(path))
-//    {
-//        sw.WriteLine("****** Song completed at " + DateTime.Now);
-//        sw.WriteLine(stats);
-//    }
-//}
-
-//private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-//{
-//    Logger.log.Info("OnSceneLoaded: " + scene.name + " (" + mode + ")");
-//}
-
-//private void OnSceneUnloaded(Scene scene)
-//{
-//    Logger.log.Info("OnSceneUnloaded: " + scene.name);
-//}
-
-//private void OnActiveSceneChanged(Scene previous, Scene current)
-//{
-//    Logger.log.Info("OnActiveSceneChanged: " + previous.name + " -> " + current.name);
-//    DebugMaterials(current);
-//}
