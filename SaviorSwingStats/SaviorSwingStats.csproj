@@ -98,7 +98,6 @@
   <ItemGroup>
     <Compile Include="Logger.cs" />
     <Compile Include="MonosSaviour.cs" />
-    <Compile Include="Notegrid.cs" />
     <Compile Include="Stats.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
