@@ -16,26 +16,53 @@ namespace SaviorSwingStats
     [Plugin(RuntimeOptions.SingleStartInit)]
     public class Plugin
     {
-
         internal static string PluginName => "SaviorSwingStats";
         readonly string songStatsDirectory = Path.Combine(UnityGame.UserDataPath, Plugin.PluginName);
 
         private StatKeeper statKeeper;
 
         [Init]
-        public void Init(IPALogger logger) { Logger.log = logger; }
-
-        [OnStart]
-        public void OnApplicationStart()
-        {
-            Logger.log.Info($"{PluginName} has started.");
-			BSEvents.gameSceneLoaded += OnGameSceneLoaded;
-
-
-			AddEvents();
+        public void Init(IPALogger logger)
+		{
+			Logger.log = logger;
 		}
 
-        [OnExit]
+		//      [OnStart]
+		//      public void OnApplicationStart()
+		//      {
+		//          Logger.log.Info($"{PluginName} has started.");
+		//	BSEvents.gameSceneLoaded += OnGameSceneLoaded;
+
+
+
+		//	AddEvents();
+		//}
+
+		[OnStart]
+		public void OnApplicationStart()
+		{
+			BSEvents.levelSelected += OnLevelSelected;
+		}
+
+		private void OnLevelSelected(LevelCollectionViewController arg1, IPreviewBeatmapLevel arg2)
+		{
+			string folder = Path.Combine(UnityGame.UserDataPath, Plugin.PluginName);
+			Directory.CreateDirectory(folder);
+
+			// grab level info using IPreviewBeatmapLevel
+
+			// use a list to hold the data
+			List<String> songInfo = new List<string>();
+
+			string filename = "SelectedLevelLog";
+			string path = Path.Combine(folder, filename);
+
+
+			// Created by visual studio
+			throw new NotImplementedException();
+		}
+
+		[OnExit]
         public void OnApplicationExit()
         {
 			//Object.Destroy(plotter);
@@ -46,8 +73,8 @@ namespace SaviorSwingStats
         private void AddEvents()
         {
 			BSEvents.menuSceneLoaded += OnMenuSceneLoaded;
-            
-            BSEvents.levelCleared += OnSongExit;
+			BSEvents.gameSceneLoaded += OnGameSceneLoaded;
+			BSEvents.levelCleared += OnSongExit;
             BSEvents.levelFailed += OnSongExit;
             BSEvents.levelQuit += OnSongExit;
             BSEvents.levelRestarted += OnSongExit;
@@ -84,24 +111,23 @@ namespace SaviorSwingStats
 
 		public void OnGameSceneLoaded()
         {
-
-			if (statKeeper != null)
+			Logger.log.Info("1 OnGameSceneLoaded. Checking for active statkeeper");
+			if (statKeeper!=null)
 			{
-				statKeeper.Clearcuts();
+				Logger.log.Info("1a Active statkeeper found.");
 
 				statKeeper = null;
 			}
 			if (statKeeper == null)
 			{
 				statKeeper = new StatKeeper();
+				Logger.log.Info("2 New Statkeeper created.");
 			}
 			else
 			{
 			}
-			statKeeper.CutChart.transform.localScale = Vector3.one;
 
 
-			Logger.log.Info("1 GameSceneLoaded called");
 
         }
 
