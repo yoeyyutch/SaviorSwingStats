@@ -12,9 +12,12 @@ namespace SaviorSwingStats
         public string songDifficulty;
         public int songNoteCount;
 
-        private readonly GameplayCoreSceneSetupData _sceneData;
-        public GameplayCoreSceneSetupData GetSceneData() => _sceneData;
+        private readonly GameplayCoreSceneSetupData gcSceneSetupData;
 
-        public SongInfo() { }
+        public SongInfo() 
+        {
+
+            gcSceneSetupData = BS_Utils.Plugin.LevelData.GameplayCoreSceneSetupData;
+        }
     }
 }

@@ -76,7 +76,7 @@ namespace SaviorSwingStats
 					notePlot[i].transform.position = new Vector3(xGrid[x], yGrid[y], 1f);
 					notePlot[i].transform.localScale = Vector3.one * scale;
 					Renderer renderer = notePlot[i].GetComponent<Renderer>();
-					renderer.material = SetMaterial(noteColor, "note_material");
+					renderer.material = SetMaterial(noteColor, "_note_material");
 
 					//Logger.log.Info(renderer.material.name.ToString());
 

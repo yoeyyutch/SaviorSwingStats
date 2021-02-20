@@ -15,16 +15,15 @@ namespace SaviorSwingStats
         public NoteCutInfo NoteCutInfo;
         public Vector3 NotePosition;
 
-        public Stats(INoteController controller, NoteData noteData, NoteCutInfo noteCutInfo, Vector3 notePosition)
+        public Stats(NoteController controller, NoteCutInfo noteCutInfo)
         {
-            NoteData = noteData;
+            NoteData = controller.noteData;
             NoteCutInfo = noteCutInfo;
-            NotePosition = notePosition;
+            NotePosition = controller.transform.position;
         }
 
         public Stats(NoteData noteData)
         {
-          
             NoteData = noteData;
             NoteCutInfo = null;
             NotePosition = Vector3.zero;

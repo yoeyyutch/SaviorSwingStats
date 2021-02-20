@@ -33,8 +33,11 @@ namespace SaviorSwingStats
 		private readonly GameplayCoreSceneSetupData _sceneData;
 		public GameplayCoreSceneSetupData GetSceneData() => _sceneData;
 
-		private readonly BeatmapObjectManager _BOM;
-		public BeatmapObjectManager GetBOM() => _BOM;
+		private readonly BeatmapObjectSpawnController BOSC;
+		public BeatmapObjectSpawnController GetBOSC() => BOSC;
+
+		private readonly BeatmapObjectManager BOM;
+		public BeatmapObjectManager GetBOM() => BOM;
 
 
 		public StatKeeper()
@@ -56,11 +59,11 @@ namespace SaviorSwingStats
 
 			_scoreController = Resources.FindObjectsOfTypeAll<ScoreController>().First();
 			_sceneData = BS_Utils.Plugin.LevelData.GameplayCoreSceneSetupData;
-			_BOM = Resources.FindObjectsOfTypeAll<BeatmapObjectManager>().First();
+			BOSC = Resources.FindObjectsOfTypeAll<BeatmapObjectSpawnController>().First();
 
 			songDifficulty = _sceneData.difficultyBeatmap.difficulty.ToString().ToLower();
 			songName = _sceneData.difficultyBeatmap.level.songName;
-			songNoteCount = _sceneData.difficultyBeatmap.beatmapData.notesCount;
+			songNoteCount = _sceneData.difficultyBeatmap.beatmapData.cuttableNotesType;
 
 			GetScoreController().noteWasMissedEvent += OnNoteMissed;
 			GetBOM().noteWasCutEvent += OnNoteCut;
@@ -82,11 +85,11 @@ namespace SaviorSwingStats
 		//}
 
 
-		public void OnNoteCut(INoteController noteController, NoteCutInfo cutInfo)
+		public void OnNoteCut(NoteController noteController, NoteCutInfo cutInfo)
 		{
 
 			NoteData note = noteController.noteData;
-			if (note.noteType == NoteType.Bomb)
+			if (note.colorType == ColorType.None)
 				return;
 
 			else
@@ -97,10 +100,10 @@ namespace SaviorSwingStats
 				//float cutMiss = 0f;
 
 				Statline statline = new Statline(
-					number: note.id + 1,
+					number: cutNumber,
 					goodCut: cutInfo.allIsOK,
 					time: note.time,
-					type: (int)note.noteType,
+					type: (int)note.colorType,
 					direction: note.cutDirection.ToString(),
 					column: note.lineIndex + 1,
 					row: (int)note.noteLineLayer + 1,
@@ -117,7 +120,7 @@ namespace SaviorSwingStats
 				DrawDot
 					(
 					index: cutNumber,
-					notetype: (int)note.noteType,
+					notetype: (int)note.colorType,
 					cutPosition: cutInfo.cutPoint,
 					scaleFactor: 0.01f,
 					shader: "Custom/Glowing",
@@ -133,15 +136,15 @@ namespace SaviorSwingStats
 
 		public void OnNoteMissed(NoteData note, int multiplier)
 		{
-			if (note.noteType == NoteType.Bomb)
+			if (note.colorType == ColorType.None)
 				return;
 			else
 			{
 				Statline statline = new Statline(
-					number: note.id + 1,
+					number: note. + 1,
 					goodCut: false,
 					time: note.time,
-					type: (int)note.noteType,
+					type: (int)note.colorType,
 					direction: note.cutDirection.ToString(),
 					column: note.lineIndex + 1,
 					row: (int)note.noteLineLayer + 1,
