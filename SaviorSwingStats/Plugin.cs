@@ -16,7 +16,7 @@ namespace SaviorSwingStats
     [Plugin(RuntimeOptions.SingleStartInit)]
     public class Plugin
     {
-
+        internal static Plugin Instance { get; private set; }
         internal static string PluginName => "SaviorSwingStats";
         readonly string directory = Path.Combine(UnityGame.UserDataPath, Plugin.PluginName);
 
@@ -31,34 +31,37 @@ namespace SaviorSwingStats
         {
             Logger.log.Info($"{PluginName} has started.");
             Directory.CreateDirectory(directory);
-		
-	
-			AddEvents();
-		}
+            new GameObject("NoteTaker").AddComponent<NoteTaker>();
+
+
+            AddEvents();
+        }
 
         [OnExit]
         public void OnApplicationExit()
         {
-			//Object.Destroy(plotter);
+            //Object.Destroy(plotter);
             Logger.log.Info($"{PluginName} has exited.");
             RemoveEvents();
         }
 
         private void AddEvents()
         {
-			BSEvents.menuSceneLoaded += OnMenuSceneLoaded;
+            BSEvents.gameSceneActive += OnGameSceneActive;
+            BSEvents.menuSceneLoaded += OnMenuSceneLoaded;
             BSEvents.gameSceneLoaded += OnGameSceneLoaded;
             BSEvents.levelCleared += OnSongExit;
             BSEvents.levelFailed += OnSongExit;
             BSEvents.levelQuit += OnSongExit;
             BSEvents.levelRestarted += OnSongExit;
             BSEvents.songPaused += OnPause;
-			BSEvents.songUnpaused += OnUnpause;
+            BSEvents.songUnpaused += OnUnpause;
         }
         private void RemoveEvents()
         {
-			BSEvents.menuSceneLoaded -= OnMenuSceneLoaded;
-			BSEvents.gameSceneLoaded -= OnGameSceneLoaded;
+            BSEvents.gameSceneActive -= OnGameSceneActive;
+            BSEvents.menuSceneLoaded -= OnMenuSceneLoaded;
+            BSEvents.gameSceneLoaded -= OnGameSceneLoaded;
             BSEvents.levelCleared -= OnSongExit;
             BSEvents.levelFailed -= OnSongExit;
             BSEvents.levelQuit -= OnSongExit;
@@ -66,6 +69,11 @@ namespace SaviorSwingStats
             BSEvents.songPaused -= OnPause;
             BSEvents.songUnpaused -= OnUnpause;
         }
+
+        public void OnGameSceneActive()
+		{
+            NoteTaker.Instance.TakeNotes();
+		}
 
         public void OnPause()
         {

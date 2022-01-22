@@ -8,28 +8,30 @@ using UnityEngine;
 
 namespace SaviorSwingStats
 {
-    public struct Stats
-    {
-        
-        public NoteData NoteData;
-        public NoteCutInfo NoteCutInfo;
-        public Vector3 NotePosition;
 
-        public Stats(NoteController controller, NoteCutInfo noteCutInfo)
-        {
-            NoteData = controller.noteData;
-            NoteCutInfo = noteCutInfo;
-            NotePosition = controller.transform.position;
-        }
+	public struct SliceData
+	{
 
-        public Stats(NoteData noteData)
-        {
-            NoteData = noteData;
-            NoteCutInfo = null;
-            NotePosition = Vector3.zero;
-        }
+		public NoteData NoteStats;
+		public NoteCutInfo CutStats;
+		public Vector3 NotePosition;
 
-    }
+
+		public SliceData(NoteData noteData, NoteCutInfo noteCutInfo, Vector3 notePosition)
+		{
+			NoteStats = noteData;
+			CutStats = noteCutInfo;
+			NotePosition = notePosition;
+		}
+
+		public SliceData(NoteData noteData)
+		{
+			NoteStats = noteData;
+			CutStats = new NoteCutInfo();
+			NotePosition = Vector3.zero;
+		}
+
+	}
 }
 //private readonly INoteController noteController;
 //int ID;

@@ -8,16 +8,15 @@ namespace SaviorSwingStats
 {
     class SongInfo
     {
-        public string songName;
-        public string songDifficulty;
-        public int songNoteCount;
+        public string songName { get; private set; }
+        public string songDifficulty { get; private set; }
+        public int songNoteCount { get; private set; }
 
-        private readonly GameplayCoreSceneSetupData gcSceneSetupData;
+        private readonly GameplayCoreSceneSetupData sceneSetupData;
 
         public SongInfo() 
         {
-
-            gcSceneSetupData = BS_Utils.Plugin.LevelData.GameplayCoreSceneSetupData;
+            sceneSetupData = BS_Utils.Plugin.LevelData.GameplayCoreSceneSetupData;
         }
     }
 }

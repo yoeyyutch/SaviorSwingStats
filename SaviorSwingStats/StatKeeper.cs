@@ -11,7 +11,27 @@ namespace SaviorSwingStats
 {
 	public class StatKeeper
 	{
+		private readonly MyBeatmapObjectManager beatmapObjectManager;
+		private readonly List<SliceData> statsheet = new List<SliceData>();
 
+		internal StatKeeper()
+		{
+			beatmapObjectManager.noteWasCutEvent += OnNoteCut;
+		}
+
+		public List<SliceData> Statsheet => statsheet;
+
+		private void OnNoteCut(NoteController noteController, in NoteCutInfo noteCutInfo)
+		{
+			if (noteController.noteData.colorType == ColorType.None || !noteCutInfo.allIsOK) return;
+			SliceData slice = new SliceData(noteController.noteData, noteCutInfo, noteController.transform.position);
+			statsheet.Add(slice);
+		}
+
+
+	}
+}
+/*
 		public GameObject CutChart;
 		public List<GameObject> cutPoints;
 
@@ -27,17 +47,19 @@ namespace SaviorSwingStats
 		//private static List<Vector3> cuts = new List<Vector3>();
 		//private readonly List<Statline> statlines = new List<Statline>();
 
-		private readonly ScoreController _scoreController;
-		public ScoreController GetScoreController() => _scoreController;
+		private readonly ScoreController scoreController;
+		public ScoreController GetScoreController() => scoreController;
 
 		private readonly GameplayCoreSceneSetupData _sceneData;
 		public GameplayCoreSceneSetupData GetSceneData() => _sceneData;
 
-		private readonly BeatmapObjectSpawnController BOSC;
-		public BeatmapObjectSpawnController GetBOSC() => BOSC;
+		//private readonly BeatmapObjectSpawnController BOSC;
+		//public BeatmapObjectSpawnController GetBOSC() => BOSC;
 
-		private readonly BeatmapObjectManager BOM;
-		public BeatmapObjectManager GetBOM() => BOM;
+		private readonly MyBeatmapObjectManager mbom;
+
+		//private readonly BeatmapObjectManager beatmapObjectManager;
+		//public BeatmapObjectManager GetBOM() => beatmapObjectManager;
 
 
 		public StatKeeper()
@@ -57,180 +79,232 @@ namespace SaviorSwingStats
 
 			cutPoints = new List<GameObject>();
 
-			_scoreController = Resources.FindObjectsOfTypeAll<ScoreController>().First();
+			scoreController = Resources.FindObjectsOfTypeAll<ScoreController>().First();
 			_sceneData = BS_Utils.Plugin.LevelData.GameplayCoreSceneSetupData;
-			BOSC = Resources.FindObjectsOfTypeAll<BeatmapObjectSpawnController>().First();
+			var data = _sceneData.difficultyBeatmap.beatmapData.beatmapObjectsData;
+			foreach (BeatmapObjectData beatmapObject in data)
+			{
+				if (beatmapObject is NoteData noteData)
+				{
+					bool x = true;
+				}
+			}
+
+			//BOSC = Resources.FindObjectsOfTypeAll<BeatmapObjectSpawnController>().First();
 
 			songDifficulty = _sceneData.difficultyBeatmap.difficulty.ToString().ToLower();
 			songName = _sceneData.difficultyBeatmap.level.songName;
-			songNoteCount = _sceneData.difficultyBeatmap.beatmapData.cuttableNotesType;
+			songNoteCount = _sceneData.difficultyBeatmap.beatmapData.cuttableNotesCount;
 
-			GetScoreController().noteWasMissedEvent += OnNoteMissed;
-			GetBOM().noteWasCutEvent += OnNoteCut;
+			//scoreController.noteWasCutEvent += OnNoteCutSC;
+			//scoreController.noteWasMissedEvent += OnNoteMissed;
+			//mbom.HandleNoteControllerNoteWasCut += OnNoteCut;
+			mbom.noteWasCutEvent += OnNoteWasCut;
+			mbom.noteWasMissedEvent += OnNoteWasMissed;
+
 
 			//BSEvents.songPaused += OnPause;
 			//BSEvents.songUnpaused += UnPause;
 
 		}
 
-		//public void OnPause()
-		//{
+		private void OnNoteWasMissed(NoteController obj)
+		{
+			throw new NotImplementedException();
+		}
 
+		private void OnNoteWasCut(NoteController noteController, in NoteCutInfo noteCutInfo)
+		{
+			if (noteController.noteData.colorType == ColorType.None || !noteCutInfo.allIsOK) return;
+		}
 
-		//}
+		private void LogSliceData(NoteController noteController, NoteCutInfo noteCutInfo)
+		{
 
-		//public void UnPause()
-		//{
-		//	CutChart.transform.localScale = Vector3.zero;
-		//}
-
+		}
 
 		public void OnNoteCut(NoteController noteController, NoteCutInfo cutInfo)
 		{
+			if (noteController.noteData.colorType == ColorType.None || !cutInfo.allIsOK) return;
 
-			NoteData note = noteController.noteData;
-			if (note.colorType == ColorType.None)
-				return;
+			Vector3 centerOfNote = noteController.noteTransform.position;
 
-			else
-			{
-				Vector3 centerOfNote = noteController.noteTransform.position;
-				Vector3 centerOFCut = cutInfo.cutPoint - centerOfNote;
+			Vector3 centerOFCut = cutInfo.cutPoint - centerOfNote;
 
-				//float cutMiss = 0f;
+			//float cutMiss = 0f;
+			SliceData sliceData = new SliceData(note, cutInfo, centerOfNote);
 
-				Statline statline = new Statline(
-					number: cutNumber,
-					goodCut: cutInfo.allIsOK,
-					time: note.time,
-					type: (int)note.colorType,
-					direction: note.cutDirection.ToString(),
-					column: note.lineIndex + 1,
-					row: (int)note.noteLineLayer + 1,
-					cutDeviation: cutInfo.cutDistanceToCenter,
-					cutTimeOff: cutInfo.timeDeviation,
-					noteCenter: centerOfNote,
-					cutCenter: cutInfo.cutPoint,
-					cutPlaneNormal: cutInfo.cutNormal);
+			Statline statline = new Statline(
+				number: cutNumber,
+				goodCut: cutInfo.allIsOK,
+				time: note.time,
+				type: (int)note.colorType,
+				direction: note.cutDirection.ToString(),
+				column: note.lineIndex + 1,
+				row: (int)note.noteLineLayer + 1,
+				cutDeviation: cutInfo.cutDistanceToCenter,
+				cutTimeOff: cutInfo.timeDeviation,
+				noteCenter: centerOfNote,
+				cutCenter: cutInfo.cutPoint,
+				cutPlaneNormal: cutInfo.cutNormal);
 
 
-				statsheet.Add(statline.GetStatline());
+			statsheet.Add(statline.GetStatline());
 
 
-				DrawDot
-					(
-					index: cutNumber,
-					notetype: (int)note.colorType,
-					cutPosition: cutInfo.cutPoint,
-					scaleFactor: 0.01f,
-					shader: "Custom/Glowing",
-					missDistance: cutInfo.cutDistanceToCenter,
-					cutNormal: cutInfo.cutNormal
-					);
-				cutNumber++;
+			DrawDot
+				(
+				index: cutNumber,
+				notetype: (int)note.colorType,
+				cutPosition: cutInfo.cutPoint,
+				scaleFactor: 0.01f,
+				shader: "Custom/Glowing",
+				missDistance: cutInfo.cutDistanceToCenter,
+				cutNormal: cutInfo.cutNormal
+				);
+			cutNumber++;
 
 
 
-			}
 		}
+	}
 
-		public void OnNoteMissed(NoteData note, int multiplier)
+	public void OnNoteMissed(NoteData note, int multiplier)
+	{
+		if (note.colorType == ColorType.None)
+			return;
+		else
 		{
-			if (note.colorType == ColorType.None)
-				return;
-			else
-			{
-				Statline statline = new Statline(
-					number: note. + 1,
-					goodCut: false,
-					time: note.time,
-					type: (int)note.colorType,
-					direction: note.cutDirection.ToString(),
-					column: note.lineIndex + 1,
-					row: (int)note.noteLineLayer + 1,
-					cutDeviation: 10f,
-					cutTimeOff: 10f,
-					noteCenter: Vector3.zero,
-					cutCenter: Vector3.zero,
-					cutPlaneNormal: Vector3.zero);
+			Statline statline = new Statline(
+				number: 1,
+				goodCut: false,
+				time: note.time,
+				type: (int)note.colorType,
+				direction: note.cutDirection.ToString(),
+				column: note.lineIndex + 1,
+				row: (int)note.noteLineLayer + 1,
+				cutDeviation: 10f,
+				cutTimeOff: 10f,
+				noteCenter: Vector3.zero,
+				cutCenter: Vector3.zero,
+				cutPlaneNormal: Vector3.zero);
 
-				statsheet.Add(statline.GetStatline());
-			}
+			statsheet.Add(statline.GetStatline());
 		}
+	}
 
-		public void DrawDot(int index, int notetype, Vector3 cutPosition,float scaleFactor, string shader,  float missDistance, Vector3 cutNormal)
+	public void DrawDot(int index, int notetype, Vector3 cutPosition, float scaleFactor, string shader, float missDistance, Vector3 cutNormal)
+	{
+		float p = Mathf.Atan2(-1f * cutNormal.x, cutNormal.y) * Mathf.Rad2Deg;
+		Quaternion dotRotation = Quaternion.Euler(90f, 0f, p);
+		Vector3 dotScale = new Vector3(missDistance, scaleFactor, scaleFactor);
+
+		cutPoints.Insert(index, GameObject.CreatePrimitive(PrimitiveType.Cube));
+		cutPoints[index].SetActive(true);
+		cutPoints[index].transform.SetParent(CutChart.transform);
+		cutPoints[index].transform.position = new Vector3(cutPosition.x, -.5f, cutPosition.y + 1f);
+		cutPoints[index].transform.rotation = dotRotation;
+		cutPoints[index].transform.localScale = dotScale;
+
+		float r = notetype == 0 ? .75f : 0f;
+		float b = notetype == 1 ? .75f : 0f;
+		float a = 1 - Mathf.Clamp01(missDistance / 0.3f);
+		Color gradient = new Color(r, 0f, b, 1f);
+		Renderer renderer = cutPoints[index].GetComponent<Renderer>();
+		renderer.material = SetMaterial(gradient, shader);
+
+
+
+	}
+
+	private Material SetMaterial(Color color, string shader)
+	{
+		Material output;
+		//Material shaderCheck = new Material(Shader.Find("Custom/Glowing")); 
+		Material shaderCheck = new Material(Shader.Find(shader));
+		if (shaderCheck == null)
 		{
-			float p = Mathf.Atan2(-1f * cutNormal.x, cutNormal.y) * Mathf.Rad2Deg;
-			Quaternion dotRotation = Quaternion.Euler(90f, 0f, p);
-			Vector3 dotScale = new Vector3(missDistance, scaleFactor, scaleFactor);
-
-			float r = notetype == 0 ? .75f : 0f; 
-			float b = notetype == 1 ? .75f : 0f;
-			float a = 1 - Mathf.Clamp01(missDistance / 0.3f);
-
-			//float r = Mathf.Clamp01(missDistance / 0.3f);
-			//float g = 1 - Mathf.Clamp01(missDistance / 0.3f);
-
-			//float zModified = ((cutPosition.z - 1f) * .25f) + 1f;
-			Color gradient = new Color(r, 0f, b, 1f);
-
-			cutPoints.Insert(index, GameObject.CreatePrimitive(PrimitiveType.Cube)); 
-			cutPoints[index].SetActive(true);
-			//GameObject newPoint = GameObject.CreatePrimitive(PrimitiveType.Cube);
-			cutPoints[index].transform.SetParent(CutChart.transform);
-			cutPoints[index].transform.position = new Vector3(cutPosition.x, -.5f,cutPosition.y+1f);
-			//cutPoints[index].transform.position = cutPosition;
-			cutPoints[index].transform.rotation = dotRotation;
-			cutPoints[index].transform.localScale = dotScale;
-			//cutPoints[index].transform.localScale = Vector3.one * scaleFactor;
-			Renderer renderer = cutPoints[index].GetComponent<Renderer>();
-			renderer.material = SetMaterial(gradient, shader);
-
-
-
+			Material missingMaterial = new Material(Shader.Find("Custom/Glowing"));
+			output = missingMaterial;
 		}
-		private Material SetMaterial(Color color, string shader)
+
+		else
 		{
-			Material output;
-			//Material shaderCheck = new Material(Shader.Find("Custom/Glowing")); 
-			Material shaderCheck = new Material(Shader.Find(shader));
-			if (shaderCheck == null)
-			{
-				Material missingMaterial = new Material(Shader.Find("Custom/Glowing"));
-				output = missingMaterial;
-			}
-
-			else
-			{
-				output = shaderCheck;
-			}
-
-			output.name = "Cut_Material";
-			output.SetColor("_Color", color);
-
-			//Logger.log.Info("Matl : " + output.name);
-			//Logger.log.Info("Shader    : " + output.shader.name);
-
-			return output;
+			output = shaderCheck;
 		}
 
-		public List<string> GetSongStatsheet()
-		{
-			Logger.log.Info("4 GetSongStatSheetCalled");
-			return statsheet;
-		}
+		output.name = "Cut_Material";
+		output.SetColor("_Color", color);
 
-		public void ClearStats()
-		{
-			Logger.log.Info("6 Stats cleared");
-			statsheet.Clear();
-		}
-		public void Clearcuts()
-		{
-			Logger.log.Info(" Cutpoints cleared");
-			cutPoints.Clear();
-			cutNumber = 0;
-		}
+		//Logger.log.Info("Matl : " + output.name);
+		//Logger.log.Info("Shader    : " + output.shader.name);
+
+		return output;
+	}
+
+	public List<string> GetSongStatsheet()
+	{
+		Logger.log.Info("4 GetSongStatSheetCalled");
+		return statsheet;
+	}
+
+	public void ClearStats()
+	{
+		Logger.log.Info("6 Stats cleared");
+		statsheet.Clear();
+	}
+
+	public void Clearcuts()
+	{
+		Logger.log.Info(" Cutpoints cleared");
+		cutPoints.Clear();
+		cutNumber = 0;
+	}
+}
+}*/
+
+class MyBeatmapObjectManager : BeatmapObjectManager
+{
+	public override List<ObstacleController> activeObstacleControllers => throw new NotImplementedException();
+
+	protected override ObstacleController SpawnObstacleInternal(ObstacleData obstacleData, BeatmapObjectSpawnMovementData.ObstacleSpawnData obstacleSpawnData, float rotation)
+	{
+		throw new NotImplementedException();
+	}
+
+	protected override NoteController SpawnBombNoteInternal(NoteData noteData, BeatmapObjectSpawnMovementData.NoteSpawnData noteSpawnData, float rotation)
+	{
+		throw new NotImplementedException();
+	}
+
+	protected override NoteController SpawnBasicNoteInternal(NoteData noteData, BeatmapObjectSpawnMovementData.NoteSpawnData noteSpawnData, float rotation, float cutDirectionAngleOffset)
+	{
+		throw new NotImplementedException();
+	}
+
+	protected override void DespawnInternal(NoteController noteController)
+	{
+		throw new NotImplementedException();
+	}
+
+	protected override void DespawnInternal(ObstacleController obstacleController)
+	{
+		throw new NotImplementedException();
+	}
+
+	public override void DissolveAllObjects()
+	{
+		throw new NotImplementedException();
+	}
+
+	public override void HideAllBeatmapObjects(bool hide)
+	{
+		throw new NotImplementedException();
+	}
+
+	public override void PauseAllBeatmapObjects(bool pause)
+	{
+		throw new NotImplementedException();
 	}
 }
 

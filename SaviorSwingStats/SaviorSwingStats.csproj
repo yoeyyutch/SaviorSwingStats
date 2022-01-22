@@ -109,9 +109,10 @@
     <Compile Include="Logger.cs" />
     <Compile Include="MonosSaviour.cs" />
     <Compile Include="Note.cs" />
+    <Compile Include="NoteTaker.cs" />
     <Compile Include="PluginConfig.cs" />
     <Compile Include="SongInfo.cs" />
-    <Compile Include="Stats.cs" />
+    <Compile Include="SliceData.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StatKeeper.cs" />
